@@ -1,0 +1,45 @@
+import { Lesson, NewLesson } from "../types/lesson";
+import { serverApi } from "./serverconfig";
+
+type GetAllLessonsParams = {
+  telegramUserId?: string;
+  page?: number;
+  perPage?: number;
+  fromDate?: string;
+  toDate?: string;
+};
+
+type GetAllLessonsResponse = {
+  lessons: Lesson[];
+};
+
+export const GetAllLessons = async (params: GetAllLessonsParams) => {
+  const result = await serverApi.get<GetAllLessonsResponse>("/lessons", {
+    params,
+  });
+  return result.data;
+};
+
+export const GetLessonsByDay = async (date: string) => {
+  const currentDate = new Date(date);
+  currentDate.setHours(0);
+  currentDate.setMinutes(0);
+  const fromDate = currentDate.toISOString();
+  currentDate.setHours(23);
+  currentDate.setMinutes(59); /* початок дня */
+  const toDate = currentDate.toISOString(); /* кінец
+  ь дня */
+  const result = await serverApi.get<GetAllLessonsResponse>("/lessons", {
+    params: { fromDate, toDate },
+  });
+  return result.data;
+};
+
+export const createLesson = async (lesson: NewLesson) => {
+  const defaultLesson = { telegramUserId: "-", comments: "-", pricePerHour: 100 };
+  const result = await serverApi.post<Lesson>("/lessons", {
+    ...defaultLesson,
+    ...lesson,
+  });
+  return result.data;
+};

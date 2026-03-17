@@ -1,0 +1,180 @@
+/* Booking form container */
+.bookingForm {
+  --bg: #ffffff;
+  --text: #1f2937; /* gray-800 */
+  --muted: #6b7280; /* gray-500 */
+  --border: #e5e7eb; /* gray-200 */
+  --border-strong: #d1d5db; /* gray-300 */
+  --focus: #2563eb; /* blue-600 */
+  --focus-ring: rgba(37, 99, 235, 0.18);
+  --btn: #2563eb;
+  --btn-hover: #1d4ed8;
+
+  max-width: 560px;
+  margin: 20px auto;
+  padding: 20px;
+  background: var(--bg);
+  color: var(--text);
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.05);
+
+  display: grid;
+  gap: 16px;
+}
+
+/* Ensure consistent sizing for all form children */
+.bookingForm *,
+.bookingForm *::before,
+.bookingForm *::after {
+  box-sizing: border-box;
+}
+
+.bookingForm label {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #374151; /* gray-700 */
+  margin-top: 4px;
+}
+
+.bookingForm input[type="date"],
+.bookingForm select,
+.bookingForm input[type="text"],
+.bookingForm input[type="email"],
+.bookingForm input[type="tel"] {
+  appearance: none;
+  width: 100%;
+  height: 44px;
+  padding: 0 12px;
+  border: 1px solid var(--border-strong);
+  border-radius: 10px;
+  background: #fff;
+  color: var(--text);
+  transition: background 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+  box-sizing: border-box;
+}
+
+/* Prevent grid overflow from intrinsic sizes */
+.bookingForm input,
+.bookingForm select {
+  min-width: 0;
+}
+
+.bookingForm select {
+  /* Custom select arrow */
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20' viewBox='0 0 20 20' fill='none'%3E%3Cpath d='M5 7l5 5 5-5' stroke='%239ca3af' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  background-size: 18px 18px;
+  padding-right: 40px;
+}
+
+/* Match date input visuals to other fields */
+.bookingForm input[type="date"] {
+  padding-right: 40px; /* space for icon */
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20' viewBox='0 0 24 24' fill='none'%3E%3Crect x='3' y='5' width='18' height='16' rx='2' ry='2' stroke='%239ca3af' stroke-width='1.6'/%3E%3Cpath d='M8 3v4M16 3v4' stroke='%239ca3af' stroke-width='1.6' stroke-linecap='round'/%3E%3Cpath d='M3 9h18' stroke='%239ca3af' stroke-width='1.6'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  background-size: 18px 18px;
+}
+
+.bookingForm input[type="date"]::-webkit-calendar-picker-indicator {
+  opacity: 0; /* hide native icon */
+  pointer-events: none; /* let clicks pass to input */
+}
+
+.bookingForm input[type="date"]:focus,
+.bookingForm select:focus,
+.bookingForm input[type="text"]:focus,
+.bookingForm input[type="email"]:focus,
+.bookingForm input[type="tel"]:focus {
+  outline: none;
+  border-color: var(--focus);
+  background: #fff;
+  box-shadow: 0 0 0 3px var(--focus-ring);
+}
+
+.bookingForm input[type="date"]:hover,
+.bookingForm select:hover,
+.bookingForm input[type="text"]:hover,
+.bookingForm input[type="email"]:hover,
+.bookingForm input[type="tel"]:hover {
+  border-color: #9ca3af; /* gray-400 */
+}
+
+/* Checkbox styling */
+.bookingForm input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+  accent-color: var(--focus);
+}
+
+/* Submit button */
+.bookingForm button[type="submit"] {
+  margin-top: 6px;
+  height: 46px;
+  border: 1px solid transparent;
+  border-radius: 10px;
+  background: var(--btn);
+  color: #fff;
+  font-weight: 700;
+  letter-spacing: 0.2px;
+  cursor: pointer;
+  transition: background 0.2s ease, box-shadow 0.2s ease;
+  box-shadow: 0 2px 8px rgba(37, 99, 235, 0.18);
+}
+
+.bookingForm button[type="submit"]:hover {
+  background: var(--btn-hover);
+}
+
+.bookingForm button[type="submit"]:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px var(--focus-ring);
+}
+
+/* Vertical rhythm between label and control */
+.bookingForm label + input,
+.bookingForm label + select {
+  margin-top: 2px;
+}
+
+/* When using custom NiceSelect inside the form */
+.selectField {
+  position: relative;
+}
+
+/* Checkbox row: input + label inline */
+.checkboxRow {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.checkboxRow label {
+  margin: 0;
+  font-weight: 500;
+}
+
+/* Neutralize global label+checkbox top margin for inline row */
+.checkboxRow input[type="checkbox"] {
+  margin-top: 0;
+}
+
+/* Tiny helper spacing for checkbox if label precedes it */
+.bookingForm label + input[type="checkbox"] {
+  margin-top: 4px;
+}
+
+/* Responsive */
+@media (max-width: 480px) {
+  .bookingForm {
+    margin: 16px 12px;
+    padding: 18px;
+    gap: 12px;
+  }
+
+  .bookingForm button[type="submit"] {
+    height: 44px;
+  }
+}

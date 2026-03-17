@@ -8,7 +8,9 @@ const Layout = ({ children }) => {
     <>
       <Header />
       <main>
-        <Suspense fallback={<></>}>{children}</Suspense>
+        <div className="container">
+          <Suspense fallback={<></>}>{children}</Suspense>
+        </div>
       </main>
       <Footer />
     </>

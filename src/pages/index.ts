@@ -1,12 +1,18 @@
-import { lazy } from "react";
+
+import AdminPage from "./AdminPage/AdminPage";
 import BookingPage from "./BookingPage/BookingPage";
+import HomePage from "./HomePage/HomePage";
+import LessonsPage from "./LessonsPage/LessonsPage";
+import LocationsPage from "./LocationsPage/LocationsPage";
+import PaymentsPage from "./PaymentsPage/PaymentsPage";
+import SettingsPage from "./SettingsPage/SettingsPage";
 
 export default {
-  Home: lazy(() => import("./HomePage/HomePage")),
-  Admin: lazy(() => import("./AdminPage/AdminPage")),
+  Admin: AdminPage,
+  Home: HomePage,
   Booking: BookingPage,
-  Lessons: lazy(() => import("./LessonsPage/LessonsPage")),
-  Locations: lazy(() => import("./LocationsPage/LocationsPage")),
-  Settings: lazy(() => import("./SettingsPage/SettingsPage")),
-  Payments: lazy(() => import("./PaymentsPage/PaymentsPage")),
+  Lessons: LessonsPage,
+  Locations: LocationsPage,
+  Payments: PaymentsPage,
+  Settings: SettingsPage,
 };

@@ -1,0 +1,5 @@
+.header {
+  background: var(--panel);
+  margin-bottom: 12px; /* small offset below header */
+}
+
