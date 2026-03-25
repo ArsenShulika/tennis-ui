@@ -43,3 +43,7 @@ export const createLesson = async (lesson: NewLesson) => {
   });
   return result.data;
 };
+
+export const deleteLesson = async (lessonId: string) => {
+  await serverApi.delete(`/lessons/${lessonId}`);
+};

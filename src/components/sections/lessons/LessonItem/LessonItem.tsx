@@ -1,12 +1,13 @@
+import { Lesson } from "../../../../types/lesson";
 import css from "./LessonItem.module.css";
 
-export type Lesson = {
-  id: string;
-  date: string; // ISO date YYYY-MM-DD
-  time: string; // HH:mm
-  durationMin: number;
-  hall: string;
-  type: string; // e.g., "Групове", "Індивідуальне"
+type Props = {
+  lesson: Lesson;
+  hallLabel: string;
+  typeLabel: string;
+  durationLabel: string;
+  isDeleting?: boolean;
+  onCancel?: (lesson: Lesson) => void;
 };
 
 const monthsUk = [
@@ -24,22 +25,53 @@ const monthsUk = [
   "гру",
 ];
 
-function getDayLabel(dateStr: string) {
-  const d = new Date(`${dateStr}T00:00:00`);
-  return new Intl.DateTimeFormat("uk-UA", { weekday: "short" }).format(d);
+function parseLessonDate(dateStr: string, time?: string) {
+  const normalized = dateStr.trim().replace(" ", "T");
+
+  if (normalized.includes("T")) {
+    const parsed = new Date(normalized);
+    if (!Number.isNaN(parsed.getTime())) return parsed;
+  }
+
+  if (time) {
+    const parsed = new Date(`${normalized}T${time}:00`);
+    if (!Number.isNaN(parsed.getTime())) return parsed;
+  }
+
+  const parsed = new Date(`${normalized}T00:00:00`);
+  return Number.isNaN(parsed.getTime()) ? null : parsed;
 }
 
-function getDateParts(dateStr: string) {
-  const d = new Date(`${dateStr}T00:00:00`);
+function getDayLabel(date: Date) {
+  return new Intl.DateTimeFormat("uk-UA", { weekday: "short" }).format(date);
+}
+
+function getDateParts(date: Date) {
   return {
-    day: String(d.getDate()).padStart(2, "0"),
-    month: monthsUk[d.getMonth()],
+    day: String(date.getDate()).padStart(2, "0"),
+    month: monthsUk[date.getMonth()] ?? "",
   };
 }
 
-export default function LessonItem({ lesson, onCancel }: { lesson: Lesson; onCancel?: (lesson: Lesson) => void }) {
-  const dayLabel = getDayLabel(lesson.date);
-  const { day, month } = getDateParts(lesson.date);
+function formatDisplayDate(date: Date) {
+  const yyyy = date.getFullYear();
+  const mm = String(date.getMonth() + 1).padStart(2, "0");
+  const dd = String(date.getDate()).padStart(2, "0");
+  return `${yyyy}-${mm}-${dd}`;
+}
+
+export default function LessonItem({
+  lesson,
+  hallLabel,
+  typeLabel,
+  durationLabel,
+  isDeleting = false,
+  onCancel,
+}: Props) {
+  const parsedDate = parseLessonDate(lesson.date, lesson.time);
+  const dayLabel = parsedDate ? getDayLabel(parsedDate) : "--";
+  const { day, month } = parsedDate ? getDateParts(parsedDate) : { day: "--", month: "" };
+  const displayDate = parsedDate ? formatDisplayDate(parsedDate) : lesson.date;
 
   return (
     <li className={css.item}>
@@ -50,15 +82,15 @@ export default function LessonItem({ lesson, onCancel }: { lesson: Lesson; onCan
       </div>
       <div className={css.content}>
         <div className={css.titleRow}>
-          <h3 className={css.hall}>{lesson.hall}</h3>
-          <span className={css.type}>{lesson.type}</span>
+          <h3 className={css.hall}>{hallLabel}</h3>
+          <span className={css.type}>{typeLabel}</span>
         </div>
         <div className={css.meta}>
-          <span>{lesson.date}</span>
+          <span>{displayDate}</span>
           <span className={css.dot} />
           <span>{lesson.time}</span>
           <span className={css.dot} />
-          <span>{lesson.durationMin} хв</span>
+          <span>{durationLabel}</span>
         </div>
         <div className={css.actions}>
           <button
@@ -66,8 +98,9 @@ export default function LessonItem({ lesson, onCancel }: { lesson: Lesson; onCan
             className={css.cancelBtn}
             onClick={() => onCancel?.(lesson)}
             aria-label="Скасувати бронювання"
+            disabled={isDeleting}
           >
-            Скасувати
+            {isDeleting ? "Видалення..." : "Скасувати"}
           </button>
         </div>
       </div>

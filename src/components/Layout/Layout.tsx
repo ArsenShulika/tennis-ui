@@ -1,19 +1,19 @@
-import { Suspense } from "react";
+import { ReactNode, Suspense } from "react";
 import Footer from "../customComponents/Footer/Footer";
 import Header from "../customComponents/Header/Header";
 import css from "./Layout.module.css";
 
-const Layout = ({ children }) => {
+const Layout = ({ children }: { children: ReactNode }) => {
   return (
-    <>
+    <div className={css.shell}>
       <Header />
-      <main>
-        <div className="container">
+      <main className={css.main}>
+        <div className={`container ${css.content}`}>
           <Suspense fallback={<></>}>{children}</Suspense>
         </div>
       </main>
       <Footer />
-    </>
+    </div>
   );
 };
 

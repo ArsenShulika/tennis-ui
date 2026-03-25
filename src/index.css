@@ -37,15 +37,15 @@
 html, body, #root { max-width: 100%; overflow-x: hidden; }
 
 /* Base body */
-body { margin: 0; background: var(--surface); color: var(--text); }
+body { margin: 0; min-height: 100vh; background: var(--surface); color: var(--text); }
 
 /* Global container utility to center and constrain content */
 .container {
   width: 100%;
   max-width: var(--container-max);
   margin-inline: auto;
-  padding-left: 0;
-  padding-right: 0;
+  padding-left: clamp(12px, 2vw, 24px);
+  padding-right: clamp(12px, 2vw, 24px);
   box-sizing: border-box;
 }
 
@@ -55,6 +55,7 @@ h1,h2,h3,h4,h5,h6 { margin: 0; color: var(--text); }
 p { margin: 0; }
 a { color: var(--brand); text-decoration: none; }
 a:hover { text-decoration: underline; }
+img { display: block; max-width: 100%; }
 
 /* Buttons (optional utility classes) */
 .btn {

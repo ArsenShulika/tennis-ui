@@ -1,31 +1,27 @@
 import { NavLink } from "react-router-dom";
 import css from "./Navigation.module.css";
 
+const items = [
+  { to: "/", label: "Home" },
+  { to: "/admin", label: "Admin" },
+  { to: "/booking", label: "Booking" },
+  { to: "/lessons", label: "Lessons" },
+  { to: "/locations", label: "Locations" },
+  { to: "/settings", label: "Settings" },
+  { to: "/payments", label: "Payments" },
+];
+
 const Navigation = () => {
   return (
-    <nav className={css["navigation"]}>
+    <nav className={css.navigation}>
       <ul>
-        <li>
-          <NavLink to="/">Home</NavLink>
-        </li>
-        <li>
-          <NavLink to="/admin">Admin</NavLink>
-        </li>
-        <li>
-          <NavLink to="/booking">Booking</NavLink>
-        </li>
-        <li>
-          <NavLink to="/lessons">Lessons</NavLink>
-        </li>
-        <li>
-          <NavLink to="/locations">Locations</NavLink>
-        </li>
-        <li>
-          <NavLink to="/settings">Settings</NavLink>
-        </li>
-        <li>
-          <NavLink to="/payments">Payments</NavLink>
-        </li>
+        {items.map((item) => (
+          <li key={item.to}>
+            <NavLink to={item.to}>
+              <span className={css.label}>{item.label}</span>
+            </NavLink>
+          </li>
+        ))}
       </ul>
     </nav>
   );

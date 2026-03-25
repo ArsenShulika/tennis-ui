@@ -1,0 +1,16 @@
+.shell {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.main {
+  flex: 1 0 auto;
+  width: 100%;
+}
+
+.content {
+  width: 100%;
+  padding-top: clamp(12px, 2vw, 24px);
+  padding-bottom: clamp(24px, 4vw, 48px);
+}

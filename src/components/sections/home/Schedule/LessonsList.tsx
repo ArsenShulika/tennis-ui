@@ -1,52 +1,111 @@
+import { useEffect, useMemo, useState } from "react";
+import { deleteLesson, GetAllLessons } from "../../../../api/lessonsapi";
+import { Lesson } from "../../../../types/lesson";
+import LessonItem from "../../lessons/LessonItem/LessonItem";
 import css from "./LessonsList.module.css";
-import LessonItem, { type Lesson } from "../../lessons/LessonItem/LessonItem";
 
-const lessons: Lesson[] = [
-  {
-    id: "l1",
-    date: "2025-11-05",
-    time: "18:00",
-    durationMin: 90,
-    hall: "Hala tenisowa AWF Wrocław",
-    type: "Групове",
-  },
-  {
-    id: "l2",
-    date: "2025-11-07",
-    time: "19:30",
-    durationMin: 60,
-    hall: "Hotel GEM (AZS)",
-    type: "Індивідуальне",
-  },
-  {
-    id: "l3",
-    date: "2025-11-10",
-    time: "17:00",
-    durationMin: 120,
-    hall: "Korty Morskie Oko",
-    type: "Спаринг",
-  },
-];
+const LOCATION_LABELS: Record<Lesson["location"], string> = {
+  awf: "Hala tenisowa AWF",
+  gem: "Hala wielofunkcyjna GEM",
+  oko: "Korty Morskie Oko",
+};
 
-const LessonsList = () => {
+const TYPE_LABELS: Record<Lesson["typeOfLesson"], string> = {
+  individual: "Індивідуальне",
+  split: "Спліт",
+};
+
+const DURATION_LABELS: Record<Lesson["duration"], string> = {
+  m60: "60 хв",
+  m90: "90 хв",
+  m120: "120 хв",
+};
+
+function parseLessonStart(lesson: Lesson) {
+  if (lesson.date.includes("T") || lesson.date.includes(" ")) {
+    return new Date(lesson.date.replace(" ", "T"));
+  }
+
+  return new Date(`${lesson.date}T${lesson.time}:00`);
+}
+
+export default function LessonsList() {
+  const [lessons, setLessons] = useState<Lesson[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState("");
+  const [deletingLessonId, setDeletingLessonId] = useState("");
+
+  useEffect(() => {
+    const loadLessons = async () => {
+      try {
+        setIsLoading(true);
+        setError("");
+        const response = await GetAllLessons({});
+        const sortedLessons = [...response.lessons].sort(
+          (a, b) => parseLessonStart(a).getTime() - parseLessonStart(b).getTime()
+        );
+        setLessons(sortedLessons);
+      } catch (loadError) {
+        console.error("Failed to load lessons:", loadError);
+        setError("Не вдалося завантажити заброньовані уроки.");
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    loadLessons();
+  }, []);
+
   const hasItems = lessons.length > 0;
+
+  const emptyStateText = useMemo(() => {
+    if (isLoading) return "Завантаження бронювань...";
+    if (error) return error;
+    return "Наразі немає запланованих тренувань";
+  }, [error, isLoading]);
+
+  const handleDelete = async (lesson: Lesson) => {
+    const confirmed = window.confirm("Видалити це бронювання?");
+    if (!confirmed) return;
+
+    try {
+      setDeletingLessonId(lesson._id);
+      setError("");
+      await deleteLesson(lesson._id);
+      setLessons((current) => current.filter((item) => item._id !== lesson._id));
+    } catch (deleteError) {
+      console.error("Failed to delete lesson:", deleteError);
+      setError("Не вдалося видалити бронювання.");
+    } finally {
+      setDeletingLessonId("");
+    }
+  };
+
   return (
     <section>
       <div className={css.header}>
         <h2 className={css.title}>Майбутні тренування</h2>
       </div>
+
       {hasItems ? (
         <ul className={css.list}>
-          {lessons.map((l) => (
-            <LessonItem key={l.id} lesson={l} />
+          {lessons.map((lesson) => (
+            <LessonItem
+              key={lesson._id}
+              lesson={lesson}
+              hallLabel={LOCATION_LABELS[lesson.location]}
+              typeLabel={TYPE_LABELS[lesson.typeOfLesson]}
+              durationLabel={DURATION_LABELS[lesson.duration]}
+              isDeleting={deletingLessonId === lesson._id}
+              onCancel={handleDelete}
+            />
           ))}
         </ul>
       ) : (
-        <p className={css.empty}>Наразі немає запланованих тренувань</p>
+        <p className={css.empty}>{emptyStateText}</p>
       )}
+
+      {hasItems && error ? <p className={css.error}>{error}</p> : null}
     </section>
   );
-};
-
-export default LessonsList;
-
+}

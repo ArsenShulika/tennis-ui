@@ -66,6 +66,7 @@
   align-items: baseline;
   gap: 8px;
   min-width: 0;
+  flex-wrap: wrap;
 }
 
 .hall {
@@ -75,7 +76,6 @@
   color: var(--text);
   overflow: hidden;
   text-overflow: ellipsis;
-  white-space: nowrap;
 }
 
 .type {
@@ -141,12 +141,29 @@
 
 @media (max-width: 600px) {
   .item {
-    grid-template-columns: 68px 1fr;
-    gap: 10px;
+    grid-template-columns: 1fr;
+    gap: 12px;
     padding: 10px;
     border-radius: 10px;
   }
-  .date { width: 68px; height: 68px; }
+
+  .date {
+    width: 68px;
+    height: 68px;
+  }
+
+  .content {
+    gap: 8px;
+  }
+
+  .actions {
+    justify-content: stretch;
+  }
+
+  .cancelBtn {
+    width: 100%;
+  }
+
   .dateNum { font-size: 20px; }
   .hall { font-size: 15px; }
   .meta { font-size: 12px; gap: 6px 10px; }

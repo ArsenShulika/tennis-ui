@@ -13,21 +13,21 @@ const data: Location[] = [
     name: "Hala tenisowa AWF Wrocław",
     address: "al Ignacego Jana Paderewskiego 41, 51-612 Wrocław",
     image:
-      "https://lh3.googleusercontent.com/p/AF1QipNKvkXbX4II8tqfZtJ5H8MBjPOcTjc6dUbe2riU=s1360-w1360-h1020-rw",
+      "https://lh3.googleusercontent.com/gps-cs-s/AHVAweoci4YQZoMS-QVh3ljIb0fuGuombh2p2Ov90yxl1lJdUenV83h-bTrgjK2F004nJWuCaSJ_bLGdviHSy8A4YUBZj3s67xweR0Te2JkEj_7AE1A05MDq3D3enfdrHvzfSV0gVMk=w408-h306-k-no",
   },
   {
     id: "gem",
     name: 'Hala Tenisowa i Wielofunkcyjna Hotel GEM (Klub Sportowy "AZS" Wrocław)',
     address: "Józefa Mianowskiego 2B, 51-605 Wrocław",
     image:
-      "https://lh3.googleusercontent.com/p/AF1QipNk1hYElvLYguKFtqrn_qmEA-UC2zC66AQBU65s=s1360-w1360-h1020-rw",
+      "https://lh3.googleusercontent.com/gps-cs-s/AHVAwepjGOqXOhESziqba8IonijZ-iDshM8ZMrOTfB25eVOFgQHXHUfwn07VPPcDYoYT_hGn-ixalpGBdTSh8Tvy0u9j2-jHQdtwlaP9RzJvPP9w5Zx6T_CKZcGv-cAmg_6aalNwgMzr=w408-h272-k-no",
   },
   {
     id: "morskie-oko",
     name: "Korty Morskie Oko",
     address: "Fryderyka Chopina 27, 51-609 Wrocław",
     image:
-      "https://lh3.googleusercontent.com/gps-cs-s/AC9h4npyPElsYRch_KYvRpcg1JOelzKcfazfwEVWuHWaHfIDDkB_OaZChJNzcUijsFs6OVGwclEatFepB7ksHU5eLf1_sdMe3200ce8y9zjTc8YzjOLhvGTPURWqjiAoyXgocKU_hdytcg=s1360-w1360-h1020-rw",
+      "https://streetviewpixels-pa.googleapis.com/v1/thumbnail?panoid=NwtEjN2sT0Xnbq8Ptptddw&cb_client=search.gws-prod.gps&w=408&h=240&yaw=205.94199&pitch=0&thumbfov=100",
   },
 ];
 
