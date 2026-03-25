@@ -61,6 +61,14 @@ function formatDisplayDate(date: Date) {
   return `${yyyy}-${mm}-${dd}`;
 }
 
+function formatStartTime(date: Date | null, fallbackTime?: string) {
+  if (date) {
+    return `${String(date.getHours()).padStart(2, "0")}:${String(date.getMinutes()).padStart(2, "0")}`;
+  }
+
+  return fallbackTime || "--:--";
+}
+
 export default function LessonItem({
   lesson,
   hallLabel,
@@ -74,27 +82,36 @@ export default function LessonItem({
   const dayLabel = parsedDate ? getDayLabel(parsedDate) : "--";
   const { day, month } = parsedDate ? getDateParts(parsedDate) : { day: "--", month: "" };
   const displayDate = parsedDate ? formatDisplayDate(parsedDate) : lesson.date;
+  const startTime = formatStartTime(parsedDate, lesson.time);
 
   return (
     <li className={css.item}>
-      <div className={css.date} aria-hidden>
-        <div className={css.day}>{dayLabel}</div>
-        <div className={css.dateNum}>{day}</div>
-        <div className={css.month}>{month}</div>
+      <div className={css.topRow}>
+        <div className={css.date} aria-hidden>
+          <div className={css.day}>{dayLabel}</div>
+          <div className={css.dateNum}>{day}</div>
+          <div className={css.month}>{month}</div>
+        </div>
+        <div className={css.statuses}>
+          <span className={css.timeBadge}>Старт {startTime}</span>
+          <span className={css.bookingBadge}>Заброньовано</span>
+        </div>
       </div>
+
       <div className={css.content}>
         <div className={css.titleRow}>
           <h3 className={css.hall}>{hallLabel}</h3>
           <span className={css.type}>{typeLabel}</span>
         </div>
+
         <div className={css.meta}>
-          <span>{displayDate}</span>
-          <span className={css.dot} />
-          <span>На {lesson.time}</span>
-          <span className={css.dot} />
-          <span>{durationLabel}</span>
+          <span className={css.metaTag}>{displayDate}</span>
+          <span className={css.metaTag}>Початок {startTime}</span>
+          <span className={css.metaTag}>{durationLabel}</span>
         </div>
+
         {bookedByLabel ? <div className={css.bookedBy}>Бронювання: {bookedByLabel}</div> : null}
+
         <div className={css.actions}>
           <button
             type="button"

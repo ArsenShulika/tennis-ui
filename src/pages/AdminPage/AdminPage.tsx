@@ -165,7 +165,11 @@ export default function AdminPage() {
 
   const openDatePicker = () => {
     const element = dateRef.current as unknown as { showPicker?: () => void } | null;
-    element?.showPicker?.();
+    try {
+      element?.showPicker?.();
+    } catch {
+      // Ignore browsers that do not allow programmatic picker opening here.
+    }
   };
 
   const handleDateChange = (nextValue: string) => {
@@ -264,8 +268,7 @@ export default function AdminPage() {
           value={date}
           ref={dateRef}
           onChange={(event) => handleDateChange(event.target.value)}
-          onFocus={openDatePicker}
-          onClick={openDatePicker}
+          onPointerDown={openDatePicker}
           className={css.input}
           min={minDate}
           required
