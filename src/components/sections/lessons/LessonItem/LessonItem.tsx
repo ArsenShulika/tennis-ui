@@ -12,18 +12,18 @@ type Props = {
 };
 
 const monthsUk = [
-  "ŃŃ–Ń‡",
-  "Đ»ŃŽŃ‚",
-  "Đ±ĐµŃ€",
-  "ĐşĐ˛Ń–",
-  "Ń‚Ń€Đ°",
-  "Ń‡ĐµŃ€",
-  "Đ»Đ¸Đż",
-  "ŃĐµŃ€",
-  "Đ˛ĐµŃ€",
-  "Đ¶ĐľĐ˛",
-  "Đ»Đ¸Ń",
-  "ĐłŃ€Ń",
+  "січ",
+  "лют",
+  "бер",
+  "кві",
+  "тра",
+  "чер",
+  "лип",
+  "сер",
+  "вер",
+  "жов",
+  "лис",
+  "гру",
 ];
 
 function parseLessonDate(dateStr: string, time?: string) {
@@ -90,20 +90,20 @@ export default function LessonItem({
         <div className={css.meta}>
           <span>{displayDate}</span>
           <span className={css.dot} />
-          <span>ĐťĐ° {lesson.time}</span>
+          <span>На {lesson.time}</span>
           <span className={css.dot} />
           <span>{durationLabel}</span>
         </div>
-        {bookedByLabel ? <div className={css.bookedBy}>Đ‘Ń€ĐľĐ˝ŃŽĐ˛Đ°Đ˝Đ˝ŃŹ: {bookedByLabel}</div> : null}
+        {bookedByLabel ? <div className={css.bookedBy}>Бронювання: {bookedByLabel}</div> : null}
         <div className={css.actions}>
           <button
             type="button"
             className={css.cancelBtn}
             onClick={() => onCancel?.(lesson)}
-            aria-label="ĐˇĐşĐ°ŃŃĐ˛Đ°Ń‚Đ¸ Đ±Ń€ĐľĐ˝ŃŽĐ˛Đ°Đ˝Đ˝ŃŹ"
+            aria-label="Скасувати бронювання"
             disabled={isDeleting}
           >
-            {isDeleting ? "Đ’Đ¸Đ´Đ°Đ»ĐµĐ˝Đ˝ŃŹ..." : "ĐˇĐşĐ°ŃŃĐ˛Đ°Ń‚Đ¸"}
+            {isDeleting ? "Видалення..." : "Скасувати"}
           </button>
         </div>
       </div>
