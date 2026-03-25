@@ -10,11 +10,13 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@types/telegram-web-app": "^9.5.0",
     "antd": "^6.0.0",
     "axios": "^1.9.0",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
-    "react-router-dom": "^7.9.4"
+    "react-router-dom": "^7.9.4",
+    "telegram-web-app": "^0.0.0"
   },
   "devDependencies": {
     "@eslint/js": "^9.25.0",

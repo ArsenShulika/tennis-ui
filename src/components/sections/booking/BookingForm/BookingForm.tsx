@@ -10,6 +10,7 @@ import {
   LessonType,
   NewLesson,
 } from "../../../../types/lesson";
+import { useTelegramUser } from "../../../../hooks/useTelegramUser";
 import NiceSelect from "../../../shared/NiceSelect/NiceSelect";
 import css from "./BookingForm.module.css";
 
@@ -218,6 +219,7 @@ function isLessonLocation(value: string | null): value is LessonLocation {
 }
 
 export default function BookingForm() {
+  const { telegramUserId } = useTelegramUser();
   const [searchParams] = useSearchParams();
   const [date, setDate] = useState("");
   const [selectedSlotValue, setSelectedSlotValue] = useState("");
@@ -363,6 +365,7 @@ export default function BookingForm() {
       duration,
       typeOfLesson,
       multisport,
+      telegramUserId: telegramUserId ?? undefined,
     };
 
     try {

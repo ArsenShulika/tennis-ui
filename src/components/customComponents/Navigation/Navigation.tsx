@@ -1,4 +1,5 @@
 import { NavLink } from "react-router-dom";
+import { useTelegramUser } from "../../../hooks/useTelegramUser";
 import css from "./Navigation.module.css";
 
 const items = [
@@ -12,10 +13,13 @@ const items = [
 ];
 
 const Navigation = () => {
+  const { isAdmin } = useTelegramUser();
+  const visibleItems = items.filter((item) => item.to !== "/admin" || isAdmin);
+
   return (
     <nav className={css.navigation}>
       <ul>
-        {items.map((item) => (
+        {visibleItems.map((item) => (
           <li key={item.to}>
             <NavLink to={item.to}>
               <span className={css.label}>{item.label}</span>

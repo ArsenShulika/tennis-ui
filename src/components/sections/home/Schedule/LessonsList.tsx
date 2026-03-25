@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { deleteLesson, GetAllLessons } from "../../../../api/lessonsapi";
+import { useTelegramUser } from "../../../../hooks/useTelegramUser";
 import { Lesson } from "../../../../types/lesson";
 import LessonItem from "../../lessons/LessonItem/LessonItem";
 import css from "./LessonsList.module.css";
@@ -30,39 +31,50 @@ function parseLessonStart(lesson: Lesson) {
 }
 
 export default function LessonsList() {
+  const { telegramUserId, isAdmin } = useTelegramUser();
   const [lessons, setLessons] = useState<Lesson[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState("");
   const [deletingLessonId, setDeletingLessonId] = useState("");
 
   useEffect(() => {
+    if (!telegramUserId && !isAdmin) {
+      setLessons([]);
+      setError("");
+      setIsLoading(false);
+      return;
+    }
+
     const loadLessons = async () => {
       try {
         setIsLoading(true);
         setError("");
-        const response = await GetAllLessons({});
+        const response = await GetAllLessons(isAdmin ? {} : { telegramUserId: telegramUserId ?? undefined });
         const sortedLessons = [...response.lessons].sort(
           (a, b) => parseLessonStart(a).getTime() - parseLessonStart(b).getTime()
         );
         setLessons(sortedLessons);
       } catch (loadError) {
         console.error("Failed to load lessons:", loadError);
-        setError("Не вдалося завантажити заброньовані уроки.");
+        setError("Не вдалося завантажити ваші заброньовані уроки.");
       } finally {
         setIsLoading(false);
       }
     };
 
     loadLessons();
-  }, []);
+  }, [telegramUserId, isAdmin]);
 
   const hasItems = lessons.length > 0;
 
   const emptyStateText = useMemo(() => {
+    if (!telegramUserId && !isAdmin) return "Немає даних Telegram-користувача.";
     if (isLoading) return "Завантаження бронювань...";
     if (error) return error;
-    return "Наразі немає запланованих тренувань";
-  }, [error, isLoading]);
+    return isAdmin
+      ? "Наразі немає запланованих тренувань"
+      : "Наразі у вас немає запланованих тренувань";
+  }, [error, isLoading, telegramUserId, isAdmin]);
 
   const handleDelete = async (lesson: Lesson) => {
     const confirmed = window.confirm("Видалити це бронювання?");

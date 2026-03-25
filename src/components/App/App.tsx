@@ -1,15 +1,18 @@
-import { Route, Routes } from "react-router-dom";
+import { Navigate, Route, Routes } from "react-router-dom";
 import css from "./App.module.css";
 import pages from "../../pages";
 import Layout from "../Layout/Layout";
+import { useTelegramUser } from "../../hooks/useTelegramUser";
 
 const App = () => {
+  const { isAdmin } = useTelegramUser();
+
   return (
     <div className={css["app"]}>
       <Layout>
         <Routes>
           <Route path="/" element={<pages.Home />} />
-          <Route path="/admin" element={<pages.Admin />} />
+          <Route path="/admin" element={isAdmin ? <pages.Admin /> : <Navigate to="/" replace />} />
           <Route path="/booking" element={<pages.Booking />} />
           <Route path="/lessons" element={<pages.Lessons />} />
           <Route path="/locations" element={<pages.Locations />} />
