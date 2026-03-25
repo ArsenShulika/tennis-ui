@@ -16,6 +16,7 @@ type ScheduleGrid = Record<string, Record<string, SlotCell>>;
 
 const HOURS_START = 8;
 const HOURS_END = 22;
+const MIN_BOOKING_DURATION_MINUTES = 60;
 
 const LOCATION_LABELS: Record<LessonLocation, string> = {
   awf: "Hala tenisowa AWF",
@@ -182,6 +183,33 @@ function createBlockedWeekGrid(week: Date[]): ScheduleGrid {
   );
 }
 
+function hasBookableDuration(
+  grid: ScheduleGrid,
+  dateKey: string,
+  time: string,
+  location?: LessonLocation
+) {
+  if (!location) return false;
+
+  const slotIndex = timeSlots.indexOf(time);
+  if (slotIndex === -1) return false;
+
+  let consecutiveSlots = 0;
+
+  for (let cursor = slotIndex; cursor < timeSlots.length; cursor += 1) {
+    const slotTime = timeSlots[cursor];
+    const cell = grid[dateKey]?.[slotTime];
+
+    if (cell?.status !== "free" || cell.location !== location) {
+      break;
+    }
+
+    consecutiveSlots += 1;
+  }
+
+  return consecutiveSlots * 30 >= MIN_BOOKING_DURATION_MINUTES;
+}
+
 function isToday(d: Date) {
   const t = new Date();
   return (
@@ -285,8 +313,10 @@ export default function Schedule() {
                 <div key={key} className={colClass}>
                   {timeSlots.map((t) => {
                     const cell = grid[key]?.[t] ?? { status: "busy" as const };
+                    const isBookableFreeSlot =
+                      cell.status === "free" && hasBookableDuration(grid, key, t, cell.location);
                     const cls = `${css.slot} ${css[cell.status]} ${
-                      cell.status === "free" ? css.clickable : ""
+                      isBookableFreeSlot ? css.clickable : ""
                     }`;
                     const locationLabel = cell.location
                       ? LOCATION_LABELS[cell.location]
@@ -310,11 +340,11 @@ export default function Schedule() {
                           cell.location ? ` • ${locationLabel}` : ""
                         }`}
                         onClick={() => {
-                          if (cell.status === "free") {
+                          if (isBookableFreeSlot) {
                             handleFreeSlotSelect(key, t, cell.location);
                           }
                         }}
-                        disabled={cell.status !== "free"}
+                        disabled={!isBookableFreeSlot}
                       >
                         {cell.status === "busy" ? "—" : ""}
                         {cell.status === "booked" && cell.multisport ? (
