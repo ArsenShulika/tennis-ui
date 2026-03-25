@@ -1,4 +1,4 @@
-import { FormEvent, useEffect, useMemo, useRef, useState } from "react";
+import { FormEvent, PointerEvent, useEffect, useMemo, useRef, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import { GetFreeHours } from "../../../../api/freeHours";
 import { createLesson, GetAllLessons } from "../../../../api/lessonsapi";
@@ -334,9 +334,18 @@ export default function BookingForm() {
     loadAvailability();
   }, [date, minDate, presetSlotValue]);
 
-  const openDatePicker = () => {
-    const el = dateRef.current as unknown as { showPicker?: () => void } | null;
-    el?.showPicker?.();
+  const handleDatePointerDown = (event: PointerEvent<HTMLInputElement>) => {
+    event.preventDefault();
+    const element = event.currentTarget as HTMLInputElement & { showPicker?: () => void };
+    element.focus();
+    element.showPicker?.();
+  };
+
+  const handleDateChange = (nextValue: string) => {
+    setDate(nextValue);
+    window.setTimeout(() => {
+      dateRef.current?.blur();
+    }, 0);
   };
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
@@ -389,9 +398,8 @@ export default function BookingForm() {
         id="date"
         value={date}
         ref={dateRef}
-        onChange={(event) => setDate(event.target.value)}
-        onFocus={openDatePicker}
-        onClick={openDatePicker}
+        onChange={(event) => handleDateChange(event.target.value)}
+        onPointerDown={handleDatePointerDown}
         min={minDate}
         required
       />

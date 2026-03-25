@@ -34,8 +34,8 @@
   align-items: center;
   justify-content: center;
   min-width: 0;
-  min-height: 42px;
-  padding: 0 8px;
+  min-height: 38px;
+  padding: 0 6px;
   border-radius: 999px;
   color: var(--text);
   text-decoration: none;
@@ -58,6 +58,7 @@
   color: var(--active);
   background: var(--active-bg);
   font-weight: 600;
+  border-radius: 12px;
 }
 
 .label {
@@ -84,7 +85,7 @@
   }
 
   .navigation a {
-    min-height: 38px;
+    min-height: 34px;
     padding: 0 4px;
     font-size: 12px;
   }
@@ -97,10 +98,10 @@
   }
 
   .navigation a {
-    min-height: 34px;
-    padding: 0 4px;
+    min-height: 30px;
+    padding: 0 3px;
     font-size: 11px;
-    border-radius: 10px;
+    border-radius: 8px;
   }
 
   .navigation a[aria-current="page"] .label::after {
@@ -112,7 +113,7 @@
 
 @media (max-width: 420px) {
   .navigation a {
-    min-height: 32px;
+    min-height: 28px;
     padding: 0 1px;
     font-size: 10px;
   }

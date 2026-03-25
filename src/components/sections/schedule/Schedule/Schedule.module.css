@@ -15,8 +15,9 @@
   --booked-border: rgba(248, 113, 113, 0.28);
   --busy-bg: linear-gradient(180deg, #f8fafc 0%, #eef2f7 100%);
   --busy-text: #94a3b8;
-  --slot-h: 38px;
-  --header-col: 62px;
+  --slot-h: 44px;
+  --day-head-h: 72px;
+  --header-col: 96px;
   --radius: 24px;
 
   display: grid;
@@ -47,7 +48,6 @@
 
 .timeHead,
 .dayHead {
-  min-height: 60px;
   border: 1px solid rgba(198, 214, 232, 0.98);
   border-radius: 16px;
   background:
@@ -59,6 +59,7 @@
 }
 
 .timeHead {
+  min-height: var(--day-head-h);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -70,10 +71,11 @@
 }
 
 .dayHead {
+  min-height: var(--day-head-h);
   display: grid;
   place-items: center;
   gap: 2px;
-  padding: 10px 4px;
+  padding: 8px 4px;
   color: var(--text);
   text-align: center;
 }
@@ -285,8 +287,9 @@
 
 @media (max-width: 1100px) {
   .schedule {
-    --slot-h: 32px;
-    --header-col: 52px;
+    --slot-h: 38px;
+    --day-head-h: 64px;
+    --header-col: 78px;
     padding: 12px;
     border-radius: 20px;
   }
@@ -309,8 +312,9 @@
 
 @media (max-width: 720px) {
   .schedule {
-    --slot-h: 22px;
-    --header-col: 28px;
+    --slot-h: 26px;
+    --day-head-h: 42px;
+    --header-col: 44px;
     gap: 10px;
     padding: 8px;
     border-radius: 16px;
@@ -333,10 +337,7 @@
   }
 
   .timeHead,
-  .dayHead {
-    min-height: 38px;
-    border-radius: 10px;
-  }
+  .dayHead { border-radius: 10px; }
 
   .timeHead,
   .timeCell {
@@ -376,8 +377,9 @@
 
 @media (max-width: 420px) {
   .schedule {
-    --slot-h: 18px;
-    --header-col: 24px;
+    --slot-h: 22px;
+    --day-head-h: 36px;
+    --header-col: 36px;
     padding: 6px;
   }
 
@@ -393,10 +395,7 @@
   }
 
   .timeHead,
-  .dayHead {
-    min-height: 34px;
-    border-radius: 8px;
-  }
+  .dayHead { border-radius: 8px; }
 
   .timeCell {
     font-size: 0.42rem;
