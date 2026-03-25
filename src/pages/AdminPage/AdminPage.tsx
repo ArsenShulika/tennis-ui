@@ -1,4 +1,4 @@
-import { FormEvent, MouseEvent, useEffect, useMemo, useRef, useState } from "react";
+import { FormEvent, PointerEvent, useEffect, useMemo, useRef, useState } from "react";
 import { createFreeHour, deleteFreeHour, GetFreeHours } from "../../api/freeHours";
 import { GetAllLessons } from "../../api/lessonsapi";
 import NiceSelect from "../../components/shared/NiceSelect/NiceSelect";
@@ -163,7 +163,7 @@ export default function AdminPage() {
     return "Наразі немає відкритих годин.";
   }, [isLoadingList, listError]);
 
-  const handleDateClick = (event: MouseEvent<HTMLInputElement>) => {
+  const handleDatePointerUp = (event: PointerEvent<HTMLInputElement>) => {
     const element = event.currentTarget as HTMLInputElement & { showPicker?: () => void };
     element.showPicker?.();
   };
@@ -264,7 +264,7 @@ export default function AdminPage() {
           value={date}
           ref={dateRef}
           onChange={(event) => handleDateChange(event.target.value)}
-          onClick={handleDateClick}
+          onPointerUp={handleDatePointerUp}
           className={css.input}
           min={minDate}
           required

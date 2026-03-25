@@ -1,4 +1,4 @@
-import { FormEvent, MouseEvent, useEffect, useMemo, useRef, useState } from "react";
+import { FormEvent, PointerEvent, useEffect, useMemo, useRef, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import { GetFreeHours } from "../../../../api/freeHours";
 import { createLesson, GetAllLessons } from "../../../../api/lessonsapi";
@@ -334,7 +334,7 @@ export default function BookingForm() {
     loadAvailability();
   }, [date, minDate, presetSlotValue]);
 
-  const handleDateClick = (event: MouseEvent<HTMLInputElement>) => {
+  const handleDatePointerUp = (event: PointerEvent<HTMLInputElement>) => {
     const element = event.currentTarget as HTMLInputElement & { showPicker?: () => void };
     element.showPicker?.();
   };
@@ -397,7 +397,7 @@ export default function BookingForm() {
         value={date}
         ref={dateRef}
         onChange={(event) => handleDateChange(event.target.value)}
-        onClick={handleDateClick}
+        onPointerUp={handleDatePointerUp}
         min={minDate}
         required
       />
