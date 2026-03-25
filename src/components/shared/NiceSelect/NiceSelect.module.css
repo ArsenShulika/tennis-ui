@@ -7,12 +7,24 @@
 }
 
 .select :global(.ant-select-selector) {
-  height: 44px !important;
+  height: 46px !important;
   padding: 0 12px !important;
   border: 1px solid #d1d5db !important;
   border-radius: 10px !important;
   box-shadow: none !important;
   transition: border-color 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+}
+
+.select :global(.ant-select-selection-wrap) {
+  align-items: center;
+}
+
+.select :global(.ant-select-selection-search),
+.select :global(.ant-select-selection-item),
+.select :global(.ant-select-selection-placeholder) {
+  display: flex;
+  align-items: center;
+  min-height: 44px;
 }
 
 .select :global(.ant-select-selector:hover) {
@@ -53,4 +65,16 @@
 .dropdown :global(.ant-select-item-option-selected) {
   background: #f3f4f6 !important;
   font-weight: 600;
+}
+
+@media (max-width: 640px) {
+  .select :global(.ant-select-selector) {
+    height: 44px !important;
+  }
+
+  .select :global(.ant-select-selection-search),
+  .select :global(.ant-select-selection-item),
+  .select :global(.ant-select-selection-placeholder) {
+    min-height: 42px;
+  }
 }

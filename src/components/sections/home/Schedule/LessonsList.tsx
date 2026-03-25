@@ -23,12 +23,34 @@ const DURATION_LABELS: Record<Lesson["duration"], string> = {
   m120: "120 хв",
 };
 
-function parseLessonStart(lesson: Lesson) {
-  if (lesson.date.includes("T") || lesson.date.includes(" ")) {
-    return new Date(lesson.date.replace(" ", "T"));
+function parseLocalDateTime(value: string) {
+  const normalizedValue = value.trim().replace(" ", "T");
+  const match = normalizedValue.match(
+    /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})(?::(\d{2}))?/
+  );
+
+  if (!match) {
+    const fallback = new Date(normalizedValue);
+    return Number.isNaN(fallback.getTime()) ? null : fallback;
   }
 
-  return new Date(`${lesson.date}T${lesson.time}:00`);
+  const [, year, month, day, hours, minutes, seconds = "00"] = match;
+  return new Date(
+    Number(year),
+    Number(month) - 1,
+    Number(day),
+    Number(hours),
+    Number(minutes),
+    Number(seconds)
+  );
+}
+
+function parseLessonStart(lesson: Lesson) {
+  if (lesson.date.includes("T") || lesson.date.includes(" ")) {
+    return parseLocalDateTime(lesson.date);
+  }
+
+  return parseLocalDateTime(`${lesson.date}T${lesson.time}:00`);
 }
 
 export default function LessonsList() {
@@ -57,7 +79,7 @@ export default function LessonsList() {
           isAdmin ? {} : { telegramUserId: telegramUserId ?? undefined }
         );
         const sortedLessons = [...response.lessons].sort(
-          (a, b) => parseLessonStart(a).getTime() - parseLessonStart(b).getTime()
+          (a, b) => (parseLessonStart(a)?.getTime() ?? 0) - (parseLessonStart(b)?.getTime() ?? 0)
         );
         setLessons(sortedLessons);
 

@@ -26,21 +26,38 @@ const monthsUk = [
   "гру",
 ];
 
-function parseLessonDate(dateStr: string, time?: string) {
-  const normalized = dateStr.trim().replace(" ", "T");
+function parseLocalDateTime(value: string) {
+  const normalizedValue = value.trim().replace(" ", "T");
+  const match = normalizedValue.match(
+    /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})(?::(\d{2}))?/
+  );
 
-  if (normalized.includes("T")) {
-    const parsed = new Date(normalized);
-    if (!Number.isNaN(parsed.getTime())) return parsed;
+  if (!match) {
+    const fallback = new Date(normalizedValue);
+    return Number.isNaN(fallback.getTime()) ? null : fallback;
+  }
+
+  const [, year, month, day, hours, minutes, seconds = "00"] = match;
+  return new Date(
+    Number(year),
+    Number(month) - 1,
+    Number(day),
+    Number(hours),
+    Number(minutes),
+    Number(seconds)
+  );
+}
+
+function parseLessonDate(dateStr: string, time?: string) {
+  if (dateStr.includes("T") || dateStr.includes(" ")) {
+    return parseLocalDateTime(dateStr);
   }
 
   if (time) {
-    const parsed = new Date(`${normalized}T${time}:00`);
-    if (!Number.isNaN(parsed.getTime())) return parsed;
+    return parseLocalDateTime(`${dateStr}T${time}:00`);
   }
 
-  const parsed = new Date(`${normalized}T00:00:00`);
-  return Number.isNaN(parsed.getTime()) ? null : parsed;
+  return parseLocalDateTime(`${dateStr}T00:00:00`);
 }
 
 function getDayLabel(date: Date) {

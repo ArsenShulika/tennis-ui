@@ -17,7 +17,7 @@
   --busy-text: #94a3b8;
   --slot-h: 44px;
   --day-head-h: 72px;
-  --header-col: 96px;
+  --header-col: 152px;
   --radius: 24px;
 
   display: grid;
@@ -64,7 +64,7 @@
   align-items: center;
   justify-content: center;
   color: var(--muted);
-  font-size: 0.7rem;
+  font-size: 1.15rem;
   font-weight: 700;
   letter-spacing: 0.08em;
   text-transform: uppercase;
@@ -75,13 +75,13 @@
   display: grid;
   place-items: center;
   gap: 2px;
-  padding: 8px 4px;
+  padding: 6px 2px;
   color: var(--text);
   text-align: center;
 }
 
 .dayName {
-  font-size: 0.65rem;
+  font-size: 0.56rem;
   color: var(--muted);
   text-transform: uppercase;
   letter-spacing: 0.1em;
@@ -89,7 +89,7 @@
 }
 
 .dayDate {
-  font-size: 1rem;
+  font-size: 0.86rem;
   font-weight: 800;
   line-height: 1;
 }
@@ -147,7 +147,7 @@
   background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
   border: 1px solid var(--line);
   color: var(--muted);
-  font-size: 0.68rem;
+  font-size: 1.08rem;
   font-weight: 700;
   letter-spacing: 0.02em;
 }
@@ -289,7 +289,7 @@
   .schedule {
     --slot-h: 38px;
     --day-head-h: 64px;
-    --header-col: 78px;
+    --header-col: 126px;
     padding: 12px;
     border-radius: 20px;
   }
@@ -308,13 +308,29 @@
   .slot {
     font-size: 0.52rem;
   }
+
+  .timeHead {
+    font-size: 1rem;
+  }
+
+  .timeCell {
+    font-size: 0.94rem;
+  }
+
+  .dayName {
+    font-size: 0.5rem;
+  }
+
+  .dayDate {
+    font-size: 0.78rem;
+  }
 }
 
 @media (max-width: 720px) {
   .schedule {
     --slot-h: 26px;
     --day-head-h: 42px;
-    --header-col: 44px;
+    --header-col: 64px;
     gap: 10px;
     padding: 8px;
     border-radius: 16px;
@@ -341,17 +357,17 @@
 
   .timeHead,
   .timeCell {
-    font-size: 0.48rem;
+    font-size: 0.68rem;
     letter-spacing: 0.01em;
   }
 
   .dayName {
-    font-size: 0.46rem;
+    font-size: 0.4rem;
     letter-spacing: 0.04em;
   }
 
   .dayDate {
-    font-size: 0.68rem;
+    font-size: 0.56rem;
   }
 
   .timeCell,
@@ -379,7 +395,7 @@
   .schedule {
     --slot-h: 22px;
     --day-head-h: 36px;
-    --header-col: 36px;
+    --header-col: 56px;
     padding: 6px;
   }
 
@@ -398,15 +414,15 @@
   .dayHead { border-radius: 8px; }
 
   .timeCell {
-    font-size: 0.42rem;
+    font-size: 0.58rem;
   }
 
   .dayName {
-    font-size: 0.4rem;
+    font-size: 0.34rem;
   }
 
   .dayDate {
-    font-size: 0.62rem;
+    font-size: 0.5rem;
   }
 
   .legend {
