@@ -27,6 +27,7 @@ const NiceSelect = ({
   onChange,
 }: Props) => {
   const [value, setValue] = useState<string>(defaultValue ?? "");
+  const [open, setOpen] = useState(false);
   const hiddenInputRef = useRef<HTMLInputElement | null>(null);
 
   const syncHiddenInput = useCallback(
@@ -73,6 +74,7 @@ const NiceSelect = ({
     const normalizedValue =
       typeof nextValue === "string" ? nextValue : String(nextValue ?? "");
     setValue(normalizedValue);
+    setOpen(false);
     syncHiddenInput(normalizedValue, true);
     onChange?.(normalizedValue);
   };
@@ -89,10 +91,12 @@ const NiceSelect = ({
       />
       <Select
         id={id}
+        open={open}
         value={value || undefined}
         options={options}
         placeholder={placeholder}
         onChange={handleSelectChange}
+        onOpenChange={setOpen}
         className={[css.select, className].filter(Boolean).join(" ")}
         popupClassName={css.dropdown}
         showArrow

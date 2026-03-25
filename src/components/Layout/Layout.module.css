@@ -11,6 +11,6 @@
 
 .content {
   width: 100%;
-  padding-top: clamp(12px, 2vw, 24px);
+  padding-top: clamp(84px, 11vw, 104px);
   padding-bottom: clamp(24px, 4vw, 48px);
 }

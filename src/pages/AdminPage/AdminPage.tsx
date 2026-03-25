@@ -1,4 +1,4 @@
-import { FormEvent, useEffect, useMemo, useState } from "react";
+import { FormEvent, useEffect, useMemo, useRef, useState } from "react";
 import { createFreeHour, deleteFreeHour, GetFreeHours } from "../../api/freeHours";
 import { GetAllLessons } from "../../api/lessonsapi";
 import NiceSelect from "../../components/shared/NiceSelect/NiceSelect";
@@ -119,6 +119,7 @@ export default function AdminPage() {
   const [isLoadingList, setIsLoadingList] = useState(true);
   const [listError, setListError] = useState("");
   const [deletingId, setDeletingId] = useState("");
+  const dateRef = useRef<HTMLInputElement | null>(null);
 
   const now = new Date();
   const minDate = formatDateInputValue(now);
@@ -161,6 +162,18 @@ export default function AdminPage() {
     if (listError) return listError;
     return "Наразі немає відкритих годин.";
   }, [isLoadingList, listError]);
+
+  const openDatePicker = () => {
+    const element = dateRef.current as unknown as { showPicker?: () => void } | null;
+    element?.showPicker?.();
+  };
+
+  const handleDateChange = (nextValue: string) => {
+    setDate(nextValue);
+    window.setTimeout(() => {
+      dateRef.current?.blur();
+    }, 0);
+  };
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -249,7 +262,10 @@ export default function AdminPage() {
           id="free-hour-date"
           type="date"
           value={date}
-          onChange={(event) => setDate(event.target.value)}
+          ref={dateRef}
+          onChange={(event) => handleDateChange(event.target.value)}
+          onFocus={openDatePicker}
+          onClick={openDatePicker}
           className={css.input}
           min={minDate}
           required
