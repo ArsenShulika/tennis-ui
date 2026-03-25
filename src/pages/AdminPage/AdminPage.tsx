@@ -1,4 +1,4 @@
-import { FormEvent, PointerEvent, useEffect, useMemo, useRef, useState } from "react";
+import { FormEvent, useEffect, useMemo, useRef, useState } from "react";
 import { createFreeHour, deleteFreeHour, GetFreeHours } from "../../api/freeHours";
 import { GetAllLessons } from "../../api/lessonsapi";
 import NiceSelect from "../../components/shared/NiceSelect/NiceSelect";
@@ -147,7 +147,7 @@ export default function AdminPage() {
       setFutureLessons(lessonsResponse.lessons);
     } catch (loadError) {
       console.error("Failed to load admin data:", loadError);
-      setListError("Не вдалося завантажити відкриті години.");
+      setListError("ĐťĐµ Đ˛Đ´Đ°Đ»ĐľŃŃŹ Đ·Đ°Đ˛Đ°Đ˝Ń‚Đ°Đ¶Đ¸Ń‚Đ¸ Đ˛Ń–Đ´ĐşŃ€Đ¸Ń‚Ń– ĐłĐľĐ´Đ¸Đ˝Đ¸.");
     } finally {
       setIsLoadingList(false);
     }
@@ -158,14 +158,14 @@ export default function AdminPage() {
   }, []);
 
   const listEmptyText = useMemo(() => {
-    if (isLoadingList) return "Завантаження відкритих годин...";
+    if (isLoadingList) return "Đ—Đ°Đ˛Đ°Đ˝Ń‚Đ°Đ¶ĐµĐ˝Đ˝ŃŹ Đ˛Ń–Đ´ĐşŃ€Đ¸Ń‚Đ¸Ń… ĐłĐľĐ´Đ¸Đ˝...";
     if (listError) return listError;
-    return "Наразі немає відкритих годин.";
+    return "ĐťĐ°Ń€Đ°Đ·Ń– Đ˝ĐµĐĽĐ°Ń” Đ˛Ń–Đ´ĐşŃ€Đ¸Ń‚Đ¸Ń… ĐłĐľĐ´Đ¸Đ˝.";
   }, [isLoadingList, listError]);
 
-  const handleDatePointerUp = (event: PointerEvent<HTMLInputElement>) => {
-    const element = event.currentTarget as HTMLInputElement & { showPicker?: () => void };
-    element.showPicker?.();
+  const openDatePicker = () => {
+    const element = dateRef.current as unknown as { showPicker?: () => void } | null;
+    element?.showPicker?.();
   };
 
   const handleDateChange = (nextValue: string) => {
@@ -179,14 +179,14 @@ export default function AdminPage() {
     event.preventDefault();
 
     if (!date || !time) {
-      setError("Оберіть дату та час.");
+      setError("ĐžĐ±ĐµŃ€Ń–Ń‚ŃŚ Đ´Đ°Ń‚Ń Ń‚Đ° Ń‡Đ°Ń.");
       setMessage("");
       return;
     }
 
     const selectedDateTime = parseDateTime(`${date}T${time}:00`);
     if (!selectedDateTime || selectedDateTime.getTime() < Date.now()) {
-      setError("Не можна відкривати години в минулому.");
+      setError("ĐťĐµ ĐĽĐľĐ¶Đ˝Đ° Đ˛Ń–Đ´ĐşŃ€Đ¸Đ˛Đ°Ń‚Đ¸ ĐłĐľĐ´Đ¸Đ˝Đ¸ Đ˛ ĐĽĐ¸Đ˝ŃĐ»ĐľĐĽŃ.");
       setMessage("");
       return;
     }
@@ -202,7 +202,7 @@ export default function AdminPage() {
         date: `${date}T${time}:00`,
       });
 
-      setMessage("Відкриту годину успішно додано.");
+      setMessage("Đ’Ń–Đ´ĐşŃ€Đ¸Ń‚Ń ĐłĐľĐ´Đ¸Đ˝Ń ŃŃĐżŃ–ŃĐ˝Đľ Đ´ĐľĐ´Đ°Đ˝Đľ.");
       setDate("");
       setTime("");
       setLocation("awf");
@@ -210,7 +210,7 @@ export default function AdminPage() {
       await loadAdminData();
     } catch (submitError) {
       console.error("Failed to create free hour:", submitError);
-      setError("Не вдалося додати free hour. Спробуйте ще раз.");
+      setError("ĐťĐµ Đ˛Đ´Đ°Đ»ĐľŃŃŹ Đ´ĐľĐ´Đ°Ń‚Đ¸ free hour. ĐˇĐżŃ€ĐľĐ±ŃĐąŃ‚Đµ Ń‰Đµ Ń€Đ°Đ·.");
     } finally {
       setIsSubmitting(false);
     }
@@ -220,15 +220,15 @@ export default function AdminPage() {
     const overlappingLesson = findOverlappingLesson(freeHour, futureLessons);
     const confirmed = overlappingLesson
       ? window.confirm(
-          `На ${formatDatePart(overlappingLesson.date)} о ${formatTimePart(
+          `ĐťĐ° ${formatDatePart(overlappingLesson.date)} Đľ ${formatTimePart(
             overlappingLesson.date.includes("T") || overlappingLesson.date.includes(" ")
               ? overlappingLesson.date
               : `${overlappingLesson.date}T${overlappingLesson.time}:00`
-          )} вже зарезервоване тренування тривалістю ${parseLessonDurationMinutes(
+          )} Đ˛Đ¶Đµ Đ·Đ°Ń€ĐµĐ·ĐµŃ€Đ˛ĐľĐ˛Đ°Đ˝Đµ Ń‚Ń€ĐµĐ˝ŃĐ˛Đ°Đ˝Đ˝ŃŹ Ń‚Ń€Đ¸Đ˛Đ°Đ»Ń–ŃŃ‚ŃŽ ${parseLessonDurationMinutes(
             overlappingLesson.duration
-          )} хв. Видалити відкриту годину все одно?`
+          )} Ń…Đ˛. Đ’Đ¸Đ´Đ°Đ»Đ¸Ń‚Đ¸ Đ˛Ń–Đ´ĐşŃ€Đ¸Ń‚Ń ĐłĐľĐ´Đ¸Đ˝Ń Đ˛ŃĐµ ĐľĐ´Đ˝Đľ?`
         )
-      : window.confirm("Видалити цю відкриту годину?");
+      : window.confirm("Đ’Đ¸Đ´Đ°Đ»Đ¸Ń‚Đ¸ Ń†ŃŽ Đ˛Ń–Đ´ĐşŃ€Đ¸Ń‚Ń ĐłĐľĐ´Đ¸Đ˝Ń?");
 
     if (!confirmed) return;
 
@@ -239,7 +239,7 @@ export default function AdminPage() {
       setFreeHours((current) => current.filter((item) => item._id !== freeHour._id));
     } catch (deleteError) {
       console.error("Failed to delete free hour:", deleteError);
-      setListError("Не вдалося видалити відкриту годину.");
+      setListError("ĐťĐµ Đ˛Đ´Đ°Đ»ĐľŃŃŹ Đ˛Đ¸Đ´Đ°Đ»Đ¸Ń‚Đ¸ Đ˛Ń–Đ´ĐşŃ€Đ¸Ń‚Ń ĐłĐľĐ´Đ¸Đ˝Ń.");
     } finally {
       setDeletingId("");
     }
@@ -249,14 +249,14 @@ export default function AdminPage() {
     <div className={css.adminPage}>
       <form className={css.form} onSubmit={handleSubmit}>
         <div className={css.headingBlock}>
-          <h1 className={css.title}>Додати free hour</h1>
+          <h1 className={css.title}>Đ”ĐľĐ´Đ°Ń‚Đ¸ free hour</h1>
           <p className={css.subtitle}>
-            Оберіть дату, час, локацію та тривалість для нового вільного слоту.
+            ĐžĐ±ĐµŃ€Ń–Ń‚ŃŚ Đ´Đ°Ń‚Ń, Ń‡Đ°Ń, Đ»ĐľĐşĐ°Ń†Ń–ŃŽ Ń‚Đ° Ń‚Ń€Đ¸Đ˛Đ°Đ»Ń–ŃŃ‚ŃŚ Đ´Đ»ŃŹ Đ˝ĐľĐ˛ĐľĐłĐľ Đ˛Ń–Đ»ŃŚĐ˝ĐľĐłĐľ ŃĐ»ĐľŃ‚Ń.
           </p>
         </div>
 
         <label htmlFor="free-hour-date" className={css.label}>
-          Дата
+          Đ”Đ°Ń‚Đ°
         </label>
         <input
           id="free-hour-date"
@@ -264,20 +264,21 @@ export default function AdminPage() {
           value={date}
           ref={dateRef}
           onChange={(event) => handleDateChange(event.target.value)}
-          onPointerUp={handleDatePointerUp}
+          onFocus={openDatePicker}
+          onClick={openDatePicker}
           className={css.input}
           min={minDate}
           required
         />
 
         <label htmlFor="free-hour-time" className={css.label}>
-          Час
+          Đ§Đ°Ń
         </label>
         <div className={css.selectField}>
           <NiceSelect
           id="free-hour-time"
           name="time"
-          placeholder="Оберіть час"
+          placeholder="ĐžĐ±ĐµŃ€Ń–Ń‚ŃŚ Ń‡Đ°Ń"
           options={availableTimeOptions}
           defaultValue={time}
           onChange={setTime}
@@ -286,13 +287,13 @@ export default function AdminPage() {
         </div>
 
         <label htmlFor="free-hour-location" className={css.label}>
-          Локація
+          Đ›ĐľĐşĐ°Ń†Ń–ŃŹ
         </label>
         <div className={css.selectField}>
           <NiceSelect
             id="free-hour-location"
             name="location"
-            placeholder="Оберіть локацію"
+            placeholder="ĐžĐ±ĐµŃ€Ń–Ń‚ŃŚ Đ»ĐľĐşĐ°Ń†Ń–ŃŽ"
             options={locationOptions}
             defaultValue={location}
             onChange={(value) => setLocation(value as LessonLocation)}
@@ -301,7 +302,7 @@ export default function AdminPage() {
         </div>
 
         <label htmlFor="free-hour-duration" className={css.label}>
-          Тривалість у хвилинах
+          Đ˘Ń€Đ¸Đ˛Đ°Đ»Ń–ŃŃ‚ŃŚ Ń Ń…Đ˛Đ¸Đ»Đ¸Đ˝Đ°Ń…
         </label>
         <input
           id="free-hour-duration"
@@ -318,14 +319,14 @@ export default function AdminPage() {
         {error ? <p className={css.error}>{error}</p> : null}
 
         <button type="submit" className={css.submitButton} disabled={isSubmitting}>
-          {isSubmitting ? "Збереження..." : "Додати free hour"}
+          {isSubmitting ? "Đ—Đ±ĐµŃ€ĐµĐ¶ĐµĐ˝Đ˝ŃŹ..." : "Đ”ĐľĐ´Đ°Ń‚Đ¸ free hour"}
         </button>
       </form>
 
       <section className={css.listSection}>
         <div className={css.sectionHead}>
-          <h2 className={css.sectionTitle}>Відкриті години</h2>
-          <p className={css.sectionHint}>Майбутні слоти, які можна скасувати.</p>
+          <h2 className={css.sectionTitle}>Đ’Ń–Đ´ĐşŃ€Đ¸Ń‚Ń– ĐłĐľĐ´Đ¸Đ˝Đ¸</h2>
+          <p className={css.sectionHint}>ĐśĐ°ĐąĐ±ŃŃ‚Đ˝Ń– ŃĐ»ĐľŃ‚Đ¸, ŃŹĐşŃ– ĐĽĐľĐ¶Đ˝Đ° ŃĐşĐ°ŃŃĐ˛Đ°Ń‚Đ¸.</p>
         </div>
 
         {freeHours.length > 0 ? (
@@ -334,10 +335,10 @@ export default function AdminPage() {
               <li key={freeHour._id} className={css.freeHourItem}>
                 <div className={css.freeHourMeta}>
                   <span className={css.freeHourPrimary}>
-                    {formatDatePart(freeHour.date)} • {formatTimePart(freeHour.date)}
+                    {formatDatePart(freeHour.date)} â€˘ {formatTimePart(freeHour.date)}
                   </span>
                   <span className={css.freeHourSecondary}>
-                    {locationLabels[freeHour.location]} • {freeHour.duration} хв
+                    {locationLabels[freeHour.location]} â€˘ {freeHour.duration} Ń…Đ˛
                   </span>
                 </div>
                 <button
@@ -346,7 +347,7 @@ export default function AdminPage() {
                   onClick={() => handleDelete(freeHour)}
                   disabled={deletingId === freeHour._id}
                 >
-                  {deletingId === freeHour._id ? "Видалення..." : "Видалити"}
+                  {deletingId === freeHour._id ? "Đ’Đ¸Đ´Đ°Đ»ĐµĐ˝Đ˝ŃŹ..." : "Đ’Đ¸Đ´Đ°Đ»Đ¸Ń‚Đ¸"}
                 </button>
               </li>
             ))}
