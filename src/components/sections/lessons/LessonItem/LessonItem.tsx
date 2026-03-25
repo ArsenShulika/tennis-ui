@@ -6,6 +6,7 @@ type Props = {
   hallLabel: string;
   typeLabel: string;
   durationLabel: string;
+  bookedByLabel?: string | null;
   isDeleting?: boolean;
   onCancel?: (lesson: Lesson) => void;
 };
@@ -65,6 +66,7 @@ export default function LessonItem({
   hallLabel,
   typeLabel,
   durationLabel,
+  bookedByLabel = null,
   isDeleting = false,
   onCancel,
 }: Props) {
@@ -88,10 +90,11 @@ export default function LessonItem({
         <div className={css.meta}>
           <span>{displayDate}</span>
           <span className={css.dot} />
-          <span>{lesson.time}</span>
+          <span>На {lesson.time}</span>
           <span className={css.dot} />
           <span>{durationLabel}</span>
         </div>
+        {bookedByLabel ? <div className={css.bookedBy}>Бронювання: {bookedByLabel}</div> : null}
         <div className={css.actions}>
           <button
             type="button"

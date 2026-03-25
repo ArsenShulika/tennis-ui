@@ -96,6 +96,12 @@
   font-size: 13px;
 }
 
+.bookedBy {
+  color: #475569;
+  font-size: 13px;
+  font-weight: 600;
+}
+
 .dot {
   width: 4px;
   height: 4px;
@@ -167,5 +173,6 @@
   .dateNum { font-size: 20px; }
   .hall { font-size: 15px; }
   .meta { font-size: 12px; gap: 6px 10px; }
+  .bookedBy { font-size: 12px; }
   .cancelBtn { padding: 6px 10px; font-size: 12px; }
 }

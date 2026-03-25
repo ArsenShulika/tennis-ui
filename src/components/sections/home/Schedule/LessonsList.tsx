@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { deleteLesson, GetAllLessons } from "../../../../api/lessonsapi";
+import { getUserByTelegramId } from "../../../../api/usersapi";
 import { useTelegramUser } from "../../../../hooks/useTelegramUser";
 import { Lesson } from "../../../../types/lesson";
 import LessonItem from "../../lessons/LessonItem/LessonItem";
@@ -33,6 +34,7 @@ function parseLessonStart(lesson: Lesson) {
 export default function LessonsList() {
   const { telegramUserId, isAdmin } = useTelegramUser();
   const [lessons, setLessons] = useState<Lesson[]>([]);
+  const [userNamesByTelegramId, setUserNamesByTelegramId] = useState<Record<string, string>>({});
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState("");
   const [deletingLessonId, setDeletingLessonId] = useState("");
@@ -40,6 +42,7 @@ export default function LessonsList() {
   useEffect(() => {
     if (!telegramUserId && !isAdmin) {
       setLessons([]);
+      setUserNamesByTelegramId({});
       setError("");
       setIsLoading(false);
       return;
@@ -49,14 +52,48 @@ export default function LessonsList() {
       try {
         setIsLoading(true);
         setError("");
-        const response = await GetAllLessons(isAdmin ? {} : { telegramUserId: telegramUserId ?? undefined });
+
+        const response = await GetAllLessons(
+          isAdmin ? {} : { telegramUserId: telegramUserId ?? undefined }
+        );
         const sortedLessons = [...response.lessons].sort(
           (a, b) => parseLessonStart(a).getTime() - parseLessonStart(b).getTime()
         );
         setLessons(sortedLessons);
+
+        if (!isAdmin) {
+          setUserNamesByTelegramId({});
+          return;
+        }
+
+        const uniqueTelegramIds = Array.from(
+          new Set(
+            sortedLessons
+              .map((lesson) => lesson.telegramUserId)
+              .filter((value): value is string => Boolean(value))
+          )
+        );
+
+        const userEntries = await Promise.all(
+          uniqueTelegramIds.map(async (id) => {
+            try {
+              const user = await getUserByTelegramId(id);
+              return [id, user.fullName || user.userName || id] as const;
+            } catch (userError) {
+              console.error(`Failed to load user by telegram id ${id}:`, userError);
+              return [id, id] as const;
+            }
+          })
+        );
+
+        setUserNamesByTelegramId(Object.fromEntries(userEntries));
       } catch (loadError) {
         console.error("Failed to load lessons:", loadError);
-        setError("Не вдалося завантажити ваші заброньовані уроки.");
+        setError(
+          isAdmin
+            ? "Не вдалося завантажити список уроків."
+            : "Не вдалося завантажити ваші заброньовані уроки."
+        );
       } finally {
         setIsLoading(false);
       }
@@ -108,6 +145,7 @@ export default function LessonsList() {
               hallLabel={LOCATION_LABELS[lesson.location]}
               typeLabel={TYPE_LABELS[lesson.typeOfLesson]}
               durationLabel={DURATION_LABELS[lesson.duration]}
+              bookedByLabel={isAdmin ? userNamesByTelegramId[lesson.telegramUserId] ?? null : null}
               isDeleting={deletingLessonId === lesson._id}
               onCancel={handleDelete}
             />
