@@ -69,6 +69,7 @@
   line-height: 1.2;
   transition: background 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
   box-sizing: border-box;
+  display: block;
 }
 
 .readonlyField {
@@ -170,6 +171,19 @@
   width: 100%;
   min-width: 0;
   min-height: var(--field-h);
+  display: flex;
+  align-items: stretch;
+}
+
+.selectField > input,
+.selectField > select {
+  width: 100%;
+  margin: 0;
+}
+
+.selectField :global(.ant-select),
+.selectField :global(.ant-select-selector) {
+  width: 100%;
 }
 
 .hint,

@@ -394,21 +394,23 @@ export default function BookingForm() {
   return (
     <form className={css.bookingForm} onSubmit={handleSubmit}>
       <div className={css.headingBlock}>
-        <h1 className={css.title}>Резервація вільних слотів</h1>
+        <h1 className={css.title}>Запис на тренування</h1>
       </div>
 
       <label htmlFor="date">Дата:</label>
-      <input
-        type="date"
-        name="date"
-        id="date"
-        value={date}
-        ref={dateRef}
-        onChange={(event) => handleDateChange(event.target.value)}
-        onPointerDown={handleDatePointerDown}
-        min={minDate}
-        required
-      />
+      <div className={css.selectField}>
+        <input
+          type="date"
+          name="date"
+          id="date"
+          value={date}
+          ref={dateRef}
+          onChange={(event) => handleDateChange(event.target.value)}
+          onPointerDown={handleDatePointerDown}
+          min={minDate}
+          required
+        />
+      </div>
 
       <label htmlFor="time">Час:</label>
       <div className={css.selectField}>
@@ -424,14 +426,16 @@ export default function BookingForm() {
       </div>
 
       <label htmlFor="location">Локація:</label>
-      <input
-        id="location"
+      <div className={css.selectField}>
+        <input
+          id="location"
         type="text"
         value={selectedSlot ? LOCATION_LABELS[selectedSlot.location] : ""}
         placeholder="Локація визначається автоматично"
         className={`${css.readonlyField} ${css.compactField}`}
-        readOnly
-      />
+          readOnly
+        />
+      </div>
 
       <label htmlFor="duration">Тривалість:</label>
       <div className={css.selectField}>

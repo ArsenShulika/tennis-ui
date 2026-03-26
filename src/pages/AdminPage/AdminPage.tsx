@@ -20,6 +20,8 @@ const timeOptions = Array.from({ length: 28 }, (_, index) => {
   return { value, label: value };
 });
 
+const HOURS_END_MINUTES = 22 * 60;
+
 const locationLabels: Record<LessonLocation, string> = {
   awf: "Hala tenisowa AWF",
   gem: "Hala wielofunkcyjna GEM",
@@ -82,6 +84,11 @@ function addMinutes(time: string, minutesToAdd: number) {
   return `${String(Math.floor(totalMinutes / 60)).padStart(2, "0")}:${String(
     totalMinutes % 60
   ).padStart(2, "0")}`;
+}
+
+function timeToMinutes(time: string) {
+  const [hours, minutes] = time.split(":").map(Number);
+  return hours * 60 + minutes;
 }
 
 function sortFreeHours(items: FreeHour[]) {
@@ -195,6 +202,22 @@ export default function AdminPage() {
     [disabledTimeValues, minTime]
   );
 
+  const maxDurationMinutes = useMemo(() => {
+    if (!time || disabledTimeValues.has(time)) return 0;
+
+    const startMinutes = timeToMinutes(time);
+    let nextBlockedMinutes = HOURS_END_MINUTES;
+
+    disabledTimeValues.forEach((disabledTime) => {
+      const disabledMinutes = timeToMinutes(disabledTime);
+      if (disabledMinutes > startMinutes && disabledMinutes < nextBlockedMinutes) {
+        nextBlockedMinutes = disabledMinutes;
+      }
+    });
+
+    return Math.max(30, nextBlockedMinutes - startMinutes);
+  }, [disabledTimeValues, time]);
+
   const loadAdminData = async () => {
     try {
       setIsLoadingList(true);
@@ -231,6 +254,17 @@ export default function AdminPage() {
       setTime("");
     }
   }, [disabledTimeValues, time]);
+
+  useEffect(() => {
+    if (!duration) return;
+
+    const normalizedDuration = Number(duration);
+    if (!Number.isFinite(normalizedDuration) || maxDurationMinutes <= 0) return;
+
+    if (normalizedDuration > maxDurationMinutes) {
+      setDuration(String(maxDurationMinutes));
+    }
+  }, [duration, maxDurationMinutes]);
 
   const listEmptyText = useMemo(() => {
     if (isLoadingList) return "Завантаження відкритих годин...";
@@ -272,6 +306,14 @@ export default function AdminPage() {
 
     if (disabledTimeValues.has(time)) {
       setError("Цей час уже відкритий для вибраної локації.");
+      setMessage("");
+      return;
+    }
+
+    if (Number(duration) > maxDurationMinutes) {
+      setError(
+        `Тривалість не може перевищувати ${maxDurationMinutes} хв, щоб не перекривати вже відкриті або заброньовані слоти.`
+      );
       setMessage("");
       return;
     }
@@ -334,7 +376,7 @@ export default function AdminPage() {
     <div className={css.adminPage}>
       <form className={css.form} onSubmit={handleSubmit}>
         <div className={css.headingBlock}>
-          <h1 className={css.title}>Керування слотами доступності</h1>
+          <h1 className={css.title}>Відкрити нові слоти</h1>
           <p className={css.subtitle}>
             Оберіть дату, час, локацію та тривалість, щоб відкрити новий слот для бронювання.
           </p>
@@ -343,17 +385,19 @@ export default function AdminPage() {
         <label htmlFor="free-hour-date" className={css.label}>
           Дата
         </label>
-        <input
-          id="free-hour-date"
-          type="date"
-          value={date}
-          ref={dateRef}
-          onChange={(event) => handleDateChange(event.target.value)}
-          onPointerDown={openDatePicker}
-          className={css.input}
-          min={minDate}
-          required
-        />
+        <div className={css.selectField}>
+          <input
+            id="free-hour-date"
+            type="date"
+            value={date}
+            ref={dateRef}
+            onChange={(event) => handleDateChange(event.target.value)}
+            onPointerDown={openDatePicker}
+            className={css.input}
+            min={minDate}
+            required
+          />
+        </div>
 
         <label htmlFor="free-hour-time" className={css.label}>
           Час
@@ -388,16 +432,23 @@ export default function AdminPage() {
         <label htmlFor="free-hour-duration" className={css.label}>
           Тривалість у хвилинах
         </label>
-        <input
-          id="free-hour-duration"
-          type="number"
-          min={30}
-          step={30}
-          value={duration}
-          onChange={(event) => setDuration(event.target.value)}
-          className={css.input}
-          required
-        />
+        <div className={css.selectField}>
+          <input
+            id="free-hour-duration"
+            type="number"
+            min={30}
+            step={30}
+            max={maxDurationMinutes || undefined}
+            value={duration}
+            onChange={(event) => setDuration(event.target.value)}
+            className={css.input}
+            required
+          />
+        </div>
+
+        {time && maxDurationMinutes > 0 ? (
+          <p className={css.sectionHint}>Максимальна тривалість для цього старту: {maxDurationMinutes} хв.</p>
+        ) : null}
 
         {message ? <p className={css.success}>{message}</p> : null}
         {error ? <p className={css.error}>{error}</p> : null}
