@@ -106,10 +106,14 @@ export default function LessonItem({
         <h3 className={css.hall}>{hallLabel}</h3>
         <div className={css.lessonMeta}>
           <span className={css.typeText}>{typeLabel}</span>
-          <span className={css.metaDivider} aria-hidden>
-            •
-          </span>
-          <span className={css.bookingId}>ID: {bookingId}</span>
+          {adminUser ? (
+            <>
+              <span className={css.metaDivider} aria-hidden>
+                •
+              </span>
+              <span className={css.bookingId}>ID: {bookingId}</span>
+            </>
+          ) : null}
         </div>
       </div>
 
