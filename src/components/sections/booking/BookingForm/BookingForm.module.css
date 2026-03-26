@@ -10,6 +10,8 @@
   --btn: #2563eb;
   --btn-hover: #1d4ed8;
   --field-h: 46px;
+  --field-radius: 10px;
+  --field-px: 12px;
 
   width: min(100%, 560px);
   max-width: 560px;
@@ -57,9 +59,10 @@
   appearance: none;
   width: 100%;
   height: var(--field-h);
-  padding: 0 12px;
+  min-height: var(--field-h);
+  padding: 0 var(--field-px);
   border: 1px solid var(--border-strong);
-  border-radius: 10px;
+  border-radius: var(--field-radius);
   background: #fff;
   color: var(--text);
   font-size: 1rem;
@@ -75,8 +78,9 @@
 
 .compactField,
 .bookingForm input[type="date"] {
-  height: 46px;
-  padding: 0 12px;
+  height: var(--field-h);
+  min-height: var(--field-h);
+  padding: 0 var(--field-px);
   font-size: 1rem;
 }
 
@@ -156,12 +160,16 @@
 }
 
 .bookingForm label + input,
-.bookingForm label + select {
+.bookingForm label + select,
+.bookingForm label + .selectField {
   margin-top: 2px;
 }
 
 .selectField {
   position: relative;
+  width: 100%;
+  min-width: 0;
+  min-height: var(--field-h);
 }
 
 .hint,

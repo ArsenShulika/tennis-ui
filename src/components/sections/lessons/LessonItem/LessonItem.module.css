@@ -1,8 +1,8 @@
 .item {
   display: grid;
-  gap: 18px;
+  gap: 14px;
   min-height: 100%;
-  padding: 20px;
+  padding: 16px 18px;
   background: linear-gradient(180deg, #ffffff 0%, #fbfdff 100%);
   border: 1px solid #dce5f0;
   border-radius: 24px;
@@ -18,8 +18,8 @@
 
 .scheduleMeta {
   display: flex;
-  flex-wrap: wrap;
-  align-items: center;
+  flex-direction: column;
+  align-items: flex-end;
   gap: 8px;
 }
 
@@ -93,19 +93,6 @@
   box-shadow: 0 -4px 0 0 #64748b;
 }
 
-.statusBadge {
-  display: inline-flex;
-  align-items: center;
-  min-height: 32px;
-  padding: 0 12px;
-  border-radius: 999px;
-  background: #ecfdf3;
-  color: #166534;
-  font-size: 0.85rem;
-  font-weight: 700;
-  white-space: nowrap;
-}
-
 .lessonInfo {
   display: flex;
   flex-wrap: wrap;
@@ -135,8 +122,8 @@
 
 .adminPanel {
   display: grid;
-  gap: 12px;
-  padding: 14px;
+  gap: 10px;
+  padding: 12px;
   border: 1px solid #e7edf4;
   border-radius: 18px;
   background: #f8fbff;
@@ -181,7 +168,7 @@
   display: flex;
   justify-content: flex-end;
   margin-top: auto;
-  padding-top: 4px;
+  padding-top: 2px;
 }
 
 .cancelBtn {
@@ -215,7 +202,7 @@
 
 @media (max-width: 900px) {
   .item {
-    padding: 18px;
+    padding: 16px;
     border-radius: 20px;
   }
 
@@ -226,8 +213,14 @@
 
 @media (max-width: 640px) {
   .topRow {
-    flex-direction: column;
     align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .scheduleMeta {
+    align-items: flex-start;
+    flex-direction: row;
+    flex-wrap: wrap;
   }
 
   .adminGrid {

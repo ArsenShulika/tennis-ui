@@ -88,8 +88,8 @@ export default function LessonItem({
   return (
     <li className={css.item}>
       <div className={css.topRow}>
+        <span className={css.dateText}>{headerDate}</span>
         <div className={css.scheduleMeta}>
-          <span className={css.dateText}>{headerDate}</span>
           <span className={css.metaPill}>
             <span className={css.clockIcon} aria-hidden />
             {startTime}
@@ -99,8 +99,6 @@ export default function LessonItem({
             {durationLabel}
           </span>
         </div>
-
-        <span className={css.statusBadge}>Заброньовано</span>
       </div>
 
       <div className={css.lessonInfo}>

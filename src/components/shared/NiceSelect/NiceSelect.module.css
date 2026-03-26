@@ -1,5 +1,6 @@
 .wrapper {
   width: 100%;
+  min-width: 0;
 }
 
 .select {
@@ -8,14 +9,17 @@
 
 .select :global(.ant-select-selector) {
   height: 46px !important;
+  min-height: 46px !important;
   padding: 0 12px !important;
   border: 1px solid #d1d5db !important;
   border-radius: 10px !important;
   box-shadow: none !important;
+  box-sizing: border-box !important;
   transition: border-color 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
 }
 
 .select :global(.ant-select-selection-wrap) {
+  min-width: 0;
   align-items: center;
 }
 
