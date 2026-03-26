@@ -1,7 +1,7 @@
 import { FormEvent, useEffect, useMemo, useRef, useState } from "react";
+import { useSearchParams } from "react-router-dom";
 import { createFreeHour, deleteFreeHour, GetFreeHours } from "../../api/freeHours";
 import { GetAllLessons } from "../../api/lessonsapi";
-import Schedule from "../../components/sections/schedule/Schedule/Schedule";
 import NiceSelect from "../../components/shared/NiceSelect/NiceSelect";
 import { FreeHour } from "../../types/freeHour";
 import { Lesson, LessonDuration, LessonLocation } from "../../types/lesson";
@@ -157,6 +157,7 @@ function findOverlappingLesson(freeHour: FreeHour, lessons: Lesson[]) {
 }
 
 export default function AdminPage() {
+  const [searchParams, setSearchParams] = useSearchParams();
   const [date, setDate] = useState("");
   const [time, setTime] = useState("");
   const [location, setLocation] = useState<LessonLocation>("awf");
@@ -172,6 +173,8 @@ export default function AdminPage() {
   const formRef = useRef<HTMLFormElement | null>(null);
   const dateRef = useRef<HTMLInputElement | null>(null);
 
+  const presetDate = searchParams.get("date") ?? "";
+  const presetTime = searchParams.get("time") ?? "";
   const now = new Date();
   const minDate = formatDateInputValue(now);
   const minTime = date === minDate ? formatTimeInputValue(now) : undefined;
@@ -262,6 +265,28 @@ export default function AdminPage() {
   }, []);
 
   useEffect(() => {
+    if (!presetDate || !presetTime) return;
+
+    const selectedDateTime = parseDateTime(`${presetDate}T${presetTime}:00`);
+    if (!selectedDateTime || selectedDateTime.getTime() < Date.now()) {
+      setSearchParams({}, { replace: true });
+      return;
+    }
+
+    setDate(presetDate);
+    setTime(presetTime);
+    setDuration(String(MIN_LESSON_MINUTES));
+    setMessage("");
+    setError("");
+
+    window.setTimeout(() => {
+      formRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+    }, 0);
+
+    setSearchParams({}, { replace: true });
+  }, [presetDate, presetTime, setSearchParams]);
+
+  useEffect(() => {
     if (time && maxDurationMinutes < MIN_LESSON_MINUTES) {
       setTime("");
     }
@@ -302,24 +327,6 @@ export default function AdminPage() {
     setDate(nextValue);
     window.setTimeout(() => {
       dateRef.current?.blur();
-    }, 0);
-  };
-
-  const handleCalendarSlotSelect = ({ date: nextDate, time: nextTime }: {
-    date: string;
-    time: string;
-  }) => {
-    const selectedDateTime = parseDateTime(`${nextDate}T${nextTime}:00`);
-    if (!selectedDateTime || selectedDateTime.getTime() < Date.now()) return;
-
-    setDate(nextDate);
-    setTime(nextTime);
-    setDuration(String(MIN_LESSON_MINUTES));
-    setMessage("");
-    setError("");
-
-    window.setTimeout(() => {
-      formRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
     }, 0);
   };
 
@@ -417,22 +424,12 @@ export default function AdminPage() {
 
   return (
     <div className={css.adminPage}>
-      <section className={css.calendarSection}>
-        <div className={css.sectionHead}>
-          <h1 className={css.sectionTitle}>Календар слотів</h1>
-          <p className={css.sectionHint}>
-            Натисніть на майбутню клітинку зі статусом "Недоступно", щоб одразу
-            підставити дату та час у форму відкриття.
-          </p>
-        </div>
-        <Schedule mode="admin" onAdminSlotSelect={handleCalendarSlotSelect} />
-      </section>
-
       <form ref={formRef} className={css.form} onSubmit={handleSubmit}>
         <div className={css.headingBlock}>
           <h1 className={css.title}>Відкрити нові слоти</h1>
           <p className={css.subtitle}>
-            Оберіть дату, час, локацію та тривалість, щоб відкрити новий слот для бронювання.
+            Оберіть дату, час, локацію та тривалість, щоб відкрити новий слот для
+            бронювання.
           </p>
         </div>
 
@@ -501,7 +498,9 @@ export default function AdminPage() {
         </div>
 
         {time && maxDurationMinutes > 0 ? (
-          <p className={css.sectionHint}>Максимальна тривалість для цього старту: {maxDurationMinutes} хв.</p>
+          <p className={css.sectionHint}>
+            Максимальна тривалість для цього старту: {maxDurationMinutes} хв.
+          </p>
         ) : null}
 
         {message ? <p className={css.success}>{message}</p> : null}
@@ -515,7 +514,9 @@ export default function AdminPage() {
       <section className={css.listSection}>
         <div className={css.sectionHead}>
           <h2 className={css.sectionTitle}>Відкриті слоти</h2>
-          <p className={css.sectionHint}>Майбутні інтервали, які вже доступні для бронювання.</p>
+          <p className={css.sectionHint}>
+            Майбутні інтервали, які вже доступні для бронювання.
+          </p>
         </div>
 
         {freeHours.length > 0 ? (
