@@ -84,6 +84,7 @@ export default function LessonItem({
   const userName = adminUser?.userName ? `@${adminUser.userName}` : null;
   const phoneNumber = formatPhoneNumber(adminUser?.phoneNumber);
   const fullName = adminUser?.fullName?.trim() || bookedByLabel || null;
+  const bookingId = lesson.telegramUserId ? String(lesson.telegramUserId) : lesson._id;
 
   return (
     <li className={css.item}>
@@ -103,7 +104,13 @@ export default function LessonItem({
 
       <div className={css.lessonInfo}>
         <h3 className={css.hall}>{hallLabel}</h3>
-        <span className={css.typeBadge}>{typeLabel}</span>
+        <div className={css.lessonMeta}>
+          <span className={css.typeText}>{typeLabel}</span>
+          <span className={css.metaDivider} aria-hidden>
+            •
+          </span>
+          <span className={css.bookingId}>ID: {bookingId}</span>
+        </div>
       </div>
 
       {adminUser ? (

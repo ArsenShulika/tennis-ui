@@ -94,10 +94,8 @@
 }
 
 .lessonInfo {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 10px;
+  display: grid;
+  gap: 8px;
 }
 
 .hall {
@@ -108,16 +106,27 @@
   letter-spacing: -0.01em;
 }
 
-.typeBadge {
-  display: inline-flex;
+.lessonMeta {
+  display: flex;
+  flex-wrap: wrap;
   align-items: center;
-  min-height: 34px;
-  padding: 0 14px;
-  border-radius: 999px;
-  background: #eef4ff;
-  color: #315ca8;
-  font-size: 0.88rem;
+  gap: 8px;
+  color: #64748b;
+  font-size: 0.86rem;
   font-weight: 600;
+}
+
+.typeText {
+  color: #4f6fa8;
+}
+
+.metaDivider {
+  color: #cbd5e1;
+}
+
+.bookingId {
+  color: #64748b;
+  font-variant-numeric: tabular-nums;
 }
 
 .adminPanel {
@@ -225,6 +234,10 @@
 
   .adminGrid {
     grid-template-columns: 1fr;
+  }
+
+  .lessonMeta {
+    gap: 6px;
   }
 
   .footer {
