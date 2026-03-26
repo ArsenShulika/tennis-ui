@@ -11,20 +11,7 @@ type Props = {
   onCancel?: (lesson: Lesson) => void;
 };
 
-const monthsUk = [
-  "ŃŃ–Ń‡",
-  "Đ»ŃŽŃ‚",
-  "Đ±ĐµŃ€",
-  "ĐşĐ˛Ń–",
-  "Ń‚Ń€Đ°",
-  "Ń‡ĐµŃ€",
-  "Đ»Đ¸Đż",
-  "ŃĐµŃ€",
-  "Đ˛ĐµŃ€",
-  "Đ¶ĐľĐ˛",
-  "Đ»Đ¸Ń",
-  "ĐłŃ€Ń",
-];
+const monthsUk = ["січ", "лют", "бер", "кві", "тра", "чер", "лип", "сер", "вер", "жов", "лис", "гру"];
 
 function parseLocalDateTime(value: string) {
   const normalizedValue = value.trim().replace(" ", "T");
@@ -110,8 +97,8 @@ export default function LessonItem({
           <div className={css.month}>{month}</div>
         </div>
         <div className={css.statuses}>
-          <span className={css.timeBadge}>ĐˇŃ‚Đ°Ń€Ń‚ {startTime}</span>
-          <span className={css.bookingBadge}>Đ—Đ°Đ±Ń€ĐľĐ˝ŃŚĐľĐ˛Đ°Đ˝Đľ</span>
+          <span className={css.timeBadge}>Старт {startTime}</span>
+          <span className={css.bookingBadge}>Заброньовано</span>
         </div>
       </div>
 
@@ -123,21 +110,21 @@ export default function LessonItem({
 
         <div className={css.meta}>
           <span className={css.metaTag}>{displayDate}</span>
-          <span className={css.metaTag}>ĐźĐľŃ‡Đ°Ń‚ĐľĐş {startTime}</span>
+          <span className={css.metaTag}>Початок {startTime}</span>
           <span className={css.metaTag}>{durationLabel}</span>
         </div>
 
-        {bookedByLabel ? <div className={css.bookedBy}>Đ‘Ń€ĐľĐ˝ŃŽĐ˛Đ°Đ˝Đ˝ŃŹ: {bookedByLabel}</div> : null}
+        {bookedByLabel ? <div className={css.bookedBy}>Бронювання: {bookedByLabel}</div> : null}
 
         <div className={css.actions}>
           <button
             type="button"
             className={css.cancelBtn}
             onClick={() => onCancel?.(lesson)}
-            aria-label="ĐˇĐşĐ°ŃŃĐ˛Đ°Ń‚Đ¸ Đ±Ń€ĐľĐ˝ŃŽĐ˛Đ°Đ˝Đ˝ŃŹ"
+            aria-label="Скасувати бронювання"
             disabled={isDeleting}
           >
-            {isDeleting ? "Đ’Đ¸Đ´Đ°Đ»ĐµĐ˝Đ˝ŃŹ..." : "ĐˇĐşĐ°ŃŃĐ˛Đ°Ń‚Đ¸"}
+            {isDeleting ? "Видалення..." : "Скасувати"}
           </button>
         </div>
       </div>
