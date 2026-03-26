@@ -1,145 +1,168 @@
-/* Single lesson item card */
+/* Lesson card */
 .item {
-  --bg: #ffffff;
-  --border: #e5e7eb;
-  --text: #111827;
-  --muted: #6b7280;
-  --success-bg: #ecfdf3;
-  --success-text: #166534;
-
+  background: #ffffff;
+  border: 1px solid #d9e1ec;
+  border-radius: 32px;
+  box-shadow: 0 18px 40px rgba(15, 23, 42, 0.12);
+  padding: 28px 30px 22px;
   display: grid;
-  gap: 12px;
-  background: var(--bg);
-  border: 1px solid var(--border);
-  border-radius: 16px;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.06), 0 6px 18px rgba(0, 0, 0, 0.06);
-  padding: 12px;
-  transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+  gap: 22px;
 }
 
-.item:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.1), 0 14px 32px rgba(0, 0, 0, 0.06);
-  border-color: #d1d5db;
+.main {
+  display: grid;
+  gap: 20px;
 }
 
-.topRow {
+.headerMeta {
   display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 12px;
+  align-items: center;
+  gap: 20px;
+  flex-wrap: wrap;
+  color: #1f2937;
 }
 
-.date {
-  display: grid;
-  place-items: center;
-  gap: 4px;
-  width: 72px;
-  height: 72px;
-  border-radius: 10px;
-  border: 1px solid var(--border);
-  background: #f8fafc;
-  color: var(--text);
+.headerDate {
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: #111827;
+}
+
+.inlineMeta {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: #374151;
+  font-size: 0.98rem;
+  font-weight: 600;
+}
+
+.metaIcon {
+  width: 18px;
+  height: 18px;
+  border: 2px solid #667085;
+  border-radius: 999px;
+  position: relative;
   flex: 0 0 auto;
 }
 
-.day {
-  font-size: 12px;
-  color: var(--muted);
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-}
-
-.dateNum {
-  font-size: 20px;
-  font-weight: 700;
-  line-height: 1;
-}
-
-.month {
-  font-size: 12px;
-  color: var(--muted);
-}
-
-.statuses {
-  min-width: 0;
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: flex-end;
-  gap: 8px;
-}
-
-.timeBadge,
-.bookingBadge,
-.metaTag {
-  display: inline-flex;
-  align-items: center;
-  min-height: 28px;
-  padding: 4px 10px;
+.metaIcon::before,
+.metaIcon::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  background: #667085;
   border-radius: 999px;
-  font-size: 12px;
-  font-weight: 600;
-  line-height: 1.2;
+  transform-origin: bottom center;
 }
 
-.timeBadge {
-  background: #eff6ff;
-  color: #1d4ed8;
+.metaIcon::before {
+  width: 2px;
+  height: 5px;
+  transform: translate(-50%, -100%);
 }
 
-.bookingBadge {
-  background: var(--success-bg);
-  color: var(--success-text);
+.metaIcon::after {
+  width: 4px;
+  height: 2px;
+  transform: translate(0, -50%);
 }
 
-.content {
-  min-width: 0;
-  display: grid;
-  gap: 8px;
+.metaDurationIcon::before {
+  width: 8px;
+  height: 2px;
+  top: -4px;
+  left: 50%;
+  transform: translateX(-50%);
+  border-radius: 999px;
 }
 
-.titleRow {
+.metaDurationIcon::after {
+  width: 6px;
+  height: 6px;
+  border-radius: 999px;
+  background: #667085;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+}
+
+.lessonRow {
   display: flex;
-  align-items: baseline;
-  gap: 8px;
-  min-width: 0;
+  align-items: center;
+  gap: 18px;
   flex-wrap: wrap;
 }
 
 .hall {
   margin: 0;
-  font-size: 16px;
-  font-weight: 600;
-  color: var(--text);
-  overflow: hidden;
-  text-overflow: ellipsis;
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #111827;
 }
 
 .type {
-  padding: 2px 8px;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 50px;
+  padding: 0 18px;
   border-radius: 999px;
-  background: #eef2ff;
-  color: #3730a3;
-  font-size: 12px;
-  line-height: 1.6;
-  white-space: nowrap;
+  background: #eef4ff;
+  color: #2f5fb2;
+  font-size: 0.95rem;
+  font-weight: 600;
 }
 
-.meta {
+.typeIcon {
+  width: 26px;
+  height: 26px;
+  position: relative;
+  flex: 0 0 auto;
+}
+
+.typeIcon::before,
+.typeIcon::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #4b76bf;
+}
+
+.typeIcon::before {
+  top: 1px;
+  width: 10px;
+  height: 10px;
+  border-radius: 999px;
+}
+
+.typeIcon::after {
+  bottom: 1px;
+  width: 22px;
+  height: 10px;
+  border-radius: 999px 999px 6px 6px;
+}
+
+.footer {
+  border-top: 1px solid #e6ebf3;
+  padding-top: 20px;
   display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 20px;
 }
 
-.metaTag {
-  background: #f8fafc;
-  color: #475569;
-  border: 1px solid #e2e8f0;
+.footerInfo {
+  min-width: 0;
+  display: grid;
+  gap: 6px;
 }
 
 .bookedBy {
   color: #475569;
-  font-size: 13px;
+  font-size: 0.92rem;
   font-weight: 600;
 }
 
@@ -150,37 +173,38 @@
 
 .userLine {
   color: #64748b;
-  font-size: 12px;
-  line-height: 1.4;
+  font-size: 0.82rem;
+  line-height: 1.35;
 }
 
 .actions {
   display: flex;
   justify-content: flex-end;
+  flex: 0 0 auto;
 }
 
 .cancelBtn {
   appearance: none;
-  border: 1px solid #fecaca;
+  border: 1px solid #f9b8b8;
   background: #ffffff;
-  color: #b91c1c;
-  border-radius: 8px;
-  padding: 6px 10px;
-  font-size: 12px;
-  line-height: 1.2;
+  color: #c9352a;
+  border-radius: 22px;
+  padding: 12px 28px;
+  font-size: 1rem;
+  line-height: 1.1;
+  font-weight: 500;
   cursor: pointer;
   transition: background 0.2s ease, border-color 0.2s ease, color 0.2s ease, box-shadow 0.2s ease;
 }
 
 .cancelBtn:hover {
-  background: #fff1f2;
-  border-color: #fca5a5;
-  color: #991b1b;
+  background: #fff5f5;
+  border-color: #f19999;
 }
 
 .cancelBtn:focus-visible {
   outline: none;
-  box-shadow: 0 0 0 3px rgba(244, 63, 94, 0.2);
+  box-shadow: 0 0 0 3px rgba(244, 63, 94, 0.16);
 }
 
 .cancelBtn:disabled {
@@ -188,59 +212,47 @@
   cursor: not-allowed;
 }
 
-@media (max-width: 600px) {
+@media (max-width: 900px) {
   .item {
-    gap: 10px;
-    padding: 10px;
-    border-radius: 12px;
+    padding: 22px 22px 18px;
+    border-radius: 24px;
   }
 
-  .date {
-    width: 64px;
-    height: 64px;
+  .headerDate {
+    font-size: 1rem;
   }
 
-  .topRow {
-    align-items: center;
+  .hall {
+    font-size: 1rem;
   }
 
-  .statuses {
-    gap: 6px;
+  .cancelBtn {
+    padding: 10px 22px;
+    font-size: 0.95rem;
+  }
+}
+
+@media (max-width: 640px) {
+  .item {
+    gap: 18px;
+    padding: 18px 18px 16px;
+    border-radius: 22px;
+  }
+
+  .headerMeta {
+    gap: 14px;
+  }
+
+  .footer {
+    align-items: stretch;
+    flex-direction: column;
   }
 
   .actions {
-    justify-content: stretch;
+    width: 100%;
   }
 
   .cancelBtn {
     width: 100%;
-  }
-
-  .dateNum {
-    font-size: 18px;
-  }
-
-  .hall {
-    font-size: 15px;
-  }
-
-  .timeBadge,
-  .bookingBadge,
-  .metaTag {
-    font-size: 11px;
-    padding: 4px 8px;
-  }
-
-  .bookedBy {
-    font-size: 12px;
-  }
-
-  .userLine {
-    font-size: 11px;
-  }
-
-  .cancelBtn {
-    padding: 6px 10px;
-    font-size: 12px;
   }
 }
