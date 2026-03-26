@@ -13,6 +13,15 @@ type SlotCell = {
   multisport?: boolean;
 };
 type ScheduleGrid = Record<string, Record<string, SlotCell>>;
+type ScheduleMode = "user" | "admin";
+type AdminSlotSelection = {
+  date: string;
+  time: string;
+};
+type ScheduleProps = {
+  mode?: ScheduleMode;
+  onAdminSlotSelect?: (slot: AdminSlotSelection) => void;
+};
 
 const HOURS_START = 8;
 const HOURS_END = 22;
@@ -219,9 +228,13 @@ function isToday(d: Date) {
   );
 }
 
+function isPastSlot(dateKey: string, time: string) {
+  return createSlotDate(dateKey, time).getTime() < Date.now();
+}
+
 const dayFmt = new Intl.DateTimeFormat("uk-UA", { weekday: "short" });
 
-export default function Schedule() {
+export default function Schedule({ mode = "user", onAdminSlotSelect }: ScheduleProps) {
   const navigate = useNavigate();
   const [week] = useState<Date[]>(() => getCurrentWeek());
   const [grid, setGrid] = useState<ScheduleGrid>(() => createBlockedWeekGrid(week));
@@ -325,10 +338,16 @@ export default function Schedule() {
                 <div key={key} className={colClass}>
                   {timeSlots.map((t) => {
                     const cell = grid[key]?.[t] ?? { status: "busy" as const };
+                    const isPast = isPastSlot(key, t);
                     const isBookableFreeSlot =
-                      cell.status === "free" && hasBookableDuration(grid, key, t, cell.location);
+                      !isPast &&
+                      cell.status === "free" &&
+                      hasBookableDuration(grid, key, t, cell.location);
+                    const isAdminOpenableBusySlot =
+                      mode === "admin" && !isPast && cell.status === "busy";
+                    const isClickable = isBookableFreeSlot || isAdminOpenableBusySlot;
                     const cls = `${css.slot} ${css[cell.status]} ${
-                      isBookableFreeSlot ? css.clickable : ""
+                      isClickable ? css.clickable : ""
                     }`;
                     const locationLabel = cell.location
                       ? LOCATION_LABELS[cell.location]
@@ -355,8 +374,12 @@ export default function Schedule() {
                           if (isBookableFreeSlot) {
                             handleFreeSlotSelect(key, t, cell.location);
                           }
+
+                          if (isAdminOpenableBusySlot) {
+                            onAdminSlotSelect?.({ date: key, time: t });
+                          }
                         }}
-                        disabled={!isBookableFreeSlot}
+                        disabled={!isClickable}
                       >
                         {cell.status === "busy" ? "—" : ""}
                         {cell.status === "booked" && cell.multisport ? (

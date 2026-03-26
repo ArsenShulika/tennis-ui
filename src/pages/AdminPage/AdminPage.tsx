@@ -1,6 +1,7 @@
 import { FormEvent, useEffect, useMemo, useRef, useState } from "react";
 import { createFreeHour, deleteFreeHour, GetFreeHours } from "../../api/freeHours";
 import { GetAllLessons } from "../../api/lessonsapi";
+import Schedule from "../../components/sections/schedule/Schedule/Schedule";
 import NiceSelect from "../../components/shared/NiceSelect/NiceSelect";
 import { FreeHour } from "../../types/freeHour";
 import { Lesson, LessonDuration, LessonLocation } from "../../types/lesson";
@@ -21,7 +22,7 @@ const timeOptions = Array.from({ length: 28 }, (_, index) => {
 });
 
 const HOURS_END_MINUTES = 22 * 60;
-const MIN_LESSON_MINUTES = 60;
+const MIN_LESSON_MINUTES = 30;
 
 const locationLabels: Record<LessonLocation, string> = {
   awf: "Hala tenisowa AWF",
@@ -168,6 +169,7 @@ export default function AdminPage() {
   const [isLoadingList, setIsLoadingList] = useState(true);
   const [listError, setListError] = useState("");
   const [deletingId, setDeletingId] = useState("");
+  const formRef = useRef<HTMLFormElement | null>(null);
   const dateRef = useRef<HTMLInputElement | null>(null);
 
   const now = new Date();
@@ -303,6 +305,24 @@ export default function AdminPage() {
     }, 0);
   };
 
+  const handleCalendarSlotSelect = ({ date: nextDate, time: nextTime }: {
+    date: string;
+    time: string;
+  }) => {
+    const selectedDateTime = parseDateTime(`${nextDate}T${nextTime}:00`);
+    if (!selectedDateTime || selectedDateTime.getTime() < Date.now()) return;
+
+    setDate(nextDate);
+    setTime(nextTime);
+    setDuration(String(MIN_LESSON_MINUTES));
+    setMessage("");
+    setError("");
+
+    window.setTimeout(() => {
+      formRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+    }, 0);
+  };
+
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
 
@@ -397,7 +417,18 @@ export default function AdminPage() {
 
   return (
     <div className={css.adminPage}>
-      <form className={css.form} onSubmit={handleSubmit}>
+      <section className={css.calendarSection}>
+        <div className={css.sectionHead}>
+          <h1 className={css.sectionTitle}>Календар слотів</h1>
+          <p className={css.sectionHint}>
+            Натисніть на майбутню клітинку зі статусом "Недоступно", щоб одразу
+            підставити дату та час у форму відкриття.
+          </p>
+        </div>
+        <Schedule mode="admin" onAdminSlotSelect={handleCalendarSlotSelect} />
+      </section>
+
+      <form ref={formRef} className={css.form} onSubmit={handleSubmit}>
         <div className={css.headingBlock}>
           <h1 className={css.title}>Відкрити нові слоти</h1>
           <p className={css.subtitle}>

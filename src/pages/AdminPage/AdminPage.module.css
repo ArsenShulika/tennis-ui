@@ -11,10 +11,11 @@
   box-sizing: border-box;
 }
 
+.calendarSection,
 .form,
 .listSection {
   width: 100%;
-  max-width: 560px;
+  max-width: 1180px;
   display: grid;
   gap: 14px;
   padding: 24px;
@@ -29,6 +30,11 @@
   display: grid;
   gap: 6px;
   margin-bottom: 6px;
+}
+
+.form,
+.listSection {
+  max-width: 560px;
 }
 
 .title,
@@ -204,6 +210,7 @@
     padding: 20px 12px 32px;
   }
 
+  .calendarSection,
   .form,
   .listSection {
     padding: 18px;
