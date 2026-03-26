@@ -12,7 +12,10 @@ const App = () => {
       <Layout>
         <Routes>
           <Route path="/" element={<pages.Home />} />
-          <Route path="/admin" element={isAdmin ? <pages.Admin /> : <Navigate to="/" replace />} />
+          <Route
+            path="/admin"
+            element={isAdmin ? <pages.Admin /> : <Navigate to="/" replace />}
+          />
           <Route path="/booking" element={<pages.Booking />} />
           <Route path="/lessons" element={<pages.Lessons />} />
           <Route path="/locations" element={<pages.Locations />} />
