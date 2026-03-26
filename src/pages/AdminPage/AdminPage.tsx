@@ -59,6 +59,15 @@ function formatTimePart(value: string) {
   return formatTimeInputValue(parsed);
 }
 
+function addMinutes(time: string, minutesToAdd: number) {
+  const [hours, minutes] = time.split(":").map(Number);
+  const totalMinutes = hours * 60 + minutes + minutesToAdd;
+
+  return `${String(Math.floor(totalMinutes / 60)).padStart(2, "0")}:${String(
+    totalMinutes % 60
+  ).padStart(2, "0")}`;
+}
+
 function sortFreeHours(items: FreeHour[]) {
   return [...items].sort((a, b) => {
     const left = parseDateTime(a.date)?.getTime() ?? 0;
@@ -124,7 +133,36 @@ export default function AdminPage() {
   const now = new Date();
   const minDate = formatDateInputValue(now);
   const minTime = date === minDate ? formatTimeInputValue(now) : undefined;
-  const availableTimeOptions = timeOptions.filter((option) => !minTime || option.value >= minTime);
+  const disabledTimeValues = useMemo(() => {
+    if (!date) return new Set<string>();
+
+    const disabledTimes = new Set<string>();
+
+    freeHours.forEach((freeHour) => {
+      if (freeHour.location !== location) return;
+      if (formatDatePart(freeHour.date) !== date) return;
+
+      const startTime = formatTimePart(freeHour.date);
+      const slotsCount = Math.max(1, Math.ceil(freeHour.duration / 30));
+
+      for (let index = 0; index < slotsCount; index += 1) {
+        disabledTimes.add(addMinutes(startTime, index * 30));
+      }
+    });
+
+    return disabledTimes;
+  }, [date, freeHours, location]);
+
+  const availableTimeOptions = useMemo(
+    () =>
+      timeOptions
+        .filter((option) => !minTime || option.value >= minTime)
+        .map((option) => ({
+          ...option,
+          disabled: disabledTimeValues.has(option.value),
+        })),
+    [disabledTimeValues, minTime]
+  );
 
   const loadAdminData = async () => {
     try {
@@ -156,6 +194,12 @@ export default function AdminPage() {
   useEffect(() => {
     loadAdminData();
   }, []);
+
+  useEffect(() => {
+    if (time && disabledTimeValues.has(time)) {
+      setTime("");
+    }
+  }, [disabledTimeValues, time]);
 
   const listEmptyText = useMemo(() => {
     if (isLoadingList) return "Завантаження відкритих годин...";
@@ -195,6 +239,12 @@ export default function AdminPage() {
       return;
     }
 
+    if (disabledTimeValues.has(time)) {
+      setError("Цей час уже відкритий для вибраної локації.");
+      setMessage("");
+      return;
+    }
+
     setIsSubmitting(true);
     setError("");
     setMessage("");
@@ -206,7 +256,7 @@ export default function AdminPage() {
         date: `${date}T${time}:00`,
       });
 
-      setMessage("Відкриту годину успішно додано.");
+      setMessage("Слот доступності успішно відкрито.");
       setDate("");
       setTime("");
       setLocation("awf");
@@ -214,7 +264,7 @@ export default function AdminPage() {
       await loadAdminData();
     } catch (submitError) {
       console.error("Failed to create free hour:", submitError);
-      setError("Не вдалося додати free hour. Спробуйте ще раз.");
+      setError("Не вдалося відкрити слот доступності. Спробуйте ще раз.");
     } finally {
       setIsSubmitting(false);
     }
@@ -253,9 +303,9 @@ export default function AdminPage() {
     <div className={css.adminPage}>
       <form className={css.form} onSubmit={handleSubmit}>
         <div className={css.headingBlock}>
-          <h1 className={css.title}>Додати free hour</h1>
+          <h1 className={css.title}>Керування слотами доступності</h1>
           <p className={css.subtitle}>
-            Оберіть дату, час, локацію та тривалість для нового вільного слоту.
+            Оберіть дату, час, локацію та тривалість, щоб відкрити новий слот для бронювання.
           </p>
         </div>
 
@@ -322,14 +372,14 @@ export default function AdminPage() {
         {error ? <p className={css.error}>{error}</p> : null}
 
         <button type="submit" className={css.submitButton} disabled={isSubmitting}>
-          {isSubmitting ? "Збереження..." : "Додати free hour"}
+          {isSubmitting ? "Збереження..." : "Відкрити слот"}
         </button>
       </form>
 
       <section className={css.listSection}>
         <div className={css.sectionHead}>
-          <h2 className={css.sectionTitle}>Відкриті години</h2>
-          <p className={css.sectionHint}>Майбутні слоти, які можна скасувати.</p>
+          <h2 className={css.sectionTitle}>Відкриті слоти</h2>
+          <p className={css.sectionHint}>Майбутні інтервали, які вже доступні для бронювання.</p>
         </div>
 
         {freeHours.length > 0 ? (

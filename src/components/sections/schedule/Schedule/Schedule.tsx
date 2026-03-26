@@ -225,9 +225,12 @@ export default function Schedule() {
   const navigate = useNavigate();
   const [week] = useState<Date[]>(() => getCurrentWeek());
   const [grid, setGrid] = useState<ScheduleGrid>(() => createBlockedWeekGrid(week));
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     const loadSchedule = async () => {
+      setIsLoading(true);
+
       try {
         const { fromDate, toDate } = getWeekRange(week);
         const [freeHoursResponse, lessonsResponse] = await Promise.all([
@@ -249,6 +252,8 @@ export default function Schedule() {
       } catch (error) {
         console.error("Failed to load schedule data:", error);
         setGrid(createBlockedWeekGrid(week));
+      } finally {
+        setIsLoading(false);
       }
     };
 
@@ -282,7 +287,14 @@ export default function Schedule() {
       </div>
 
       <div className={css.scrollArea}>
-        <div className={css.grid}>
+        <div className={`${css.grid} ${isLoading ? css.gridLoading : ""}`}>
+          {isLoading ? (
+            <div className={css.loaderOverlay} aria-live="polite" aria-busy="true">
+              <div className={css.loaderSpinner} aria-hidden />
+              <p className={css.loaderText}>Завантажуємо вільні та зайняті години...</p>
+            </div>
+          ) : null}
+
           <div className={css.headerRow}>
             <div className={css.timeHead}>Час</div>
             {week.map((d) => (
