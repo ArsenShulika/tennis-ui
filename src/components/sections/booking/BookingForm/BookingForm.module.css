@@ -1,11 +1,11 @@
 /* Booking form container */
 .bookingForm {
   --bg: #ffffff;
-  --text: #1f2937; /* gray-800 */
-  --muted: #6b7280; /* gray-500 */
-  --border: #e5e7eb; /* gray-200 */
-  --border-strong: #d1d5db; /* gray-300 */
-  --focus: #2563eb; /* blue-600 */
+  --text: #1f2937;
+  --muted: #6b7280;
+  --border: #e5e7eb;
+  --border-strong: #d1d5db;
+  --focus: #2563eb;
   --focus-ring: rgba(37, 99, 235, 0.18);
   --btn: #2563eb;
   --btn-hover: #1d4ed8;
@@ -20,22 +20,32 @@
   border-radius: 12px;
   border: 1px solid var(--border);
   box-shadow: 0 2px 12px rgba(0, 0, 0, 0.05);
-
   display: grid;
   gap: 16px;
 }
 
-/* Ensure consistent sizing for all form children */
 .bookingForm *,
 .bookingForm *::before,
 .bookingForm *::after {
   box-sizing: border-box;
 }
 
+.headingBlock {
+  display: grid;
+  gap: 4px;
+}
+
+.title {
+  margin: 0;
+  font-size: 1.45rem;
+  line-height: 1.1;
+  color: #132238;
+}
+
 .bookingForm label {
   font-size: 0.9rem;
   font-weight: 600;
-  color: #374151; /* gray-700 */
+  color: #374151;
   margin-top: 4px;
 }
 
@@ -52,6 +62,8 @@
   border-radius: 10px;
   background: #fff;
   color: var(--text);
+  font-size: 1rem;
+  line-height: 1.2;
   transition: background 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
   box-sizing: border-box;
 }
@@ -61,24 +73,32 @@
   color: #334155;
 }
 
-/* Prevent grid overflow from intrinsic sizes */
+.compactField,
+.bookingForm input[type="date"] {
+  height: 46px;
+  padding: 0 12px;
+  font-size: 1rem;
+}
+
 .bookingForm input,
 .bookingForm select {
   min-width: 0;
 }
 
+.bookingForm input[type="date"]::-webkit-date-and-time-value {
+  text-align: left;
+}
+
+.bookingForm input[type="date"]::-webkit-calendar-picker-indicator {
+  margin: 0;
+}
+
 .bookingForm select {
-  /* Custom select arrow */
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20' viewBox='0 0 20 20' fill='none'%3E%3Cpath d='M5 7l5 5 5-5' stroke='%239ca3af' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
   background-repeat: no-repeat;
   background-position: right 12px center;
   background-size: 18px 18px;
   padding-right: 40px;
-}
-
-/* Match date input visuals to other fields */
-.bookingForm input[type="date"] {
-  padding-right: 12px;
 }
 
 .bookingForm input[type="date"]:focus,
@@ -97,17 +117,15 @@
 .bookingForm input[type="text"]:hover,
 .bookingForm input[type="email"]:hover,
 .bookingForm input[type="tel"]:hover {
-  border-color: #9ca3af; /* gray-400 */
+  border-color: #9ca3af;
 }
 
-/* Checkbox styling */
 .bookingForm input[type="checkbox"] {
   width: 18px;
   height: 18px;
   accent-color: var(--focus);
 }
 
-/* Submit button */
 .bookingForm button[type="submit"] {
   margin-top: 6px;
   height: 46px;
@@ -137,13 +155,11 @@
   box-shadow: none;
 }
 
-/* Vertical rhythm between label and control */
 .bookingForm label + input,
 .bookingForm label + select {
   margin-top: 2px;
 }
 
-/* When using custom NiceSelect inside the form */
 .selectField {
   position: relative;
 }
@@ -167,7 +183,6 @@
   color: #166534;
 }
 
-/* Checkbox row: input + label inline */
 .checkboxRow {
   display: inline-flex;
   align-items: center;
@@ -179,23 +194,24 @@
   font-weight: 500;
 }
 
-/* Neutralize global label+checkbox top margin for inline row */
 .checkboxRow input[type="checkbox"] {
   margin-top: 0;
 }
 
-/* Tiny helper spacing for checkbox if label precedes it */
 .bookingForm label + input[type="checkbox"] {
   margin-top: 4px;
 }
 
-/* Responsive */
 @media (max-width: 480px) {
   .bookingForm {
     width: 100%;
     padding: 16px;
     gap: 12px;
     border-radius: 16px;
+  }
+
+  .title {
+    font-size: 1.25rem;
   }
 
   .bookingForm button[type="submit"] {

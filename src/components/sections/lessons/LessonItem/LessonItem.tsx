@@ -121,7 +121,6 @@ export default function LessonItem({
 
         <div className={css.meta}>
           <span className={css.metaTag}>{displayDate}</span>
-          <span className={css.metaTag}>Початок {startTime}</span>
           <span className={css.metaTag}>{durationLabel}</span>
         </div>
 

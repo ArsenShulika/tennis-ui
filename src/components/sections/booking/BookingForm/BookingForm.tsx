@@ -2,6 +2,7 @@ import { FormEvent, PointerEvent, useEffect, useMemo, useRef, useState } from "r
 import { useSearchParams } from "react-router-dom";
 import { GetFreeHours } from "../../../../api/freeHours";
 import { createLesson, GetAllLessons } from "../../../../api/lessonsapi";
+import { useTelegramUser } from "../../../../hooks/useTelegramUser";
 import { FreeHour } from "../../../../types/freeHour";
 import {
   Lesson,
@@ -10,7 +11,6 @@ import {
   LessonType,
   NewLesson,
 } from "../../../../types/lesson";
-import { useTelegramUser } from "../../../../hooks/useTelegramUser";
 import NiceSelect from "../../../shared/NiceSelect/NiceSelect";
 import css from "./BookingForm.module.css";
 
@@ -393,6 +393,10 @@ export default function BookingForm() {
 
   return (
     <form className={css.bookingForm} onSubmit={handleSubmit}>
+      <div className={css.headingBlock}>
+        <h1 className={css.title}>Резервація вільних слотів</h1>
+      </div>
+
       <label htmlFor="date">Дата:</label>
       <input
         type="date"
@@ -425,7 +429,7 @@ export default function BookingForm() {
         type="text"
         value={selectedSlot ? LOCATION_LABELS[selectedSlot.location] : ""}
         placeholder="Локація визначається автоматично"
-        className={css.readonlyField}
+        className={`${css.readonlyField} ${css.compactField}`}
         readOnly
       />
 
