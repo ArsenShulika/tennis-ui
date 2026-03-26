@@ -1,4 +1,5 @@
 import { Lesson } from "../../../../types/lesson";
+import { User } from "../../../../types/user";
 import css from "./LessonItem.module.css";
 
 type Props = {
@@ -7,6 +8,7 @@ type Props = {
   typeLabel: string;
   durationLabel: string;
   bookedByLabel?: string | null;
+  adminUser?: User | null;
   isDeleting?: boolean;
   onCancel?: (lesson: Lesson) => void;
 };
@@ -59,10 +61,10 @@ function getDateParts(date: Date) {
 }
 
 function formatDisplayDate(date: Date) {
-  const yyyy = date.getFullYear();
-  const mm = String(date.getMonth() + 1).padStart(2, "0");
   const dd = String(date.getDate()).padStart(2, "0");
-  return `${yyyy}-${mm}-${dd}`;
+  const mm = String(date.getMonth() + 1).padStart(2, "0");
+  const yyyy = date.getFullYear();
+  return `${dd}.${mm}.${yyyy}`;
 }
 
 function formatStartTime(date: Date | null, fallbackTime?: string) {
@@ -73,12 +75,18 @@ function formatStartTime(date: Date | null, fallbackTime?: string) {
   return fallbackTime || "--:--";
 }
 
+function formatPhoneNumber(phoneNumber?: number) {
+  if (!phoneNumber) return null;
+  return `+${phoneNumber}`;
+}
+
 export default function LessonItem({
   lesson,
   hallLabel,
   typeLabel,
   durationLabel,
   bookedByLabel = null,
+  adminUser = null,
   isDeleting = false,
   onCancel,
 }: Props) {
@@ -87,6 +95,9 @@ export default function LessonItem({
   const { day, month } = parsedDate ? getDateParts(parsedDate) : { day: "--", month: "" };
   const displayDate = parsedDate ? formatDisplayDate(parsedDate) : lesson.date;
   const startTime = formatStartTime(parsedDate, lesson.time);
+  const userName = adminUser?.userName ? `@${adminUser.userName}` : null;
+  const phoneNumber = formatPhoneNumber(adminUser?.phoneNumber);
+  const fullName = adminUser?.fullName?.trim() || null;
 
   return (
     <li className={css.item}>
@@ -115,6 +126,14 @@ export default function LessonItem({
         </div>
 
         {bookedByLabel ? <div className={css.bookedBy}>Бронювання: {bookedByLabel}</div> : null}
+
+        {adminUser ? (
+          <div className={css.userInfo}>
+            {fullName ? <div className={css.userLine}>Ім'я: {fullName}</div> : null}
+            {userName ? <div className={css.userLine}>Telegram: {userName}</div> : null}
+            {phoneNumber ? <div className={css.userLine}>Телефон: {phoneNumber}</div> : null}
+          </div>
+        ) : null}
 
         <div className={css.actions}>
           <button

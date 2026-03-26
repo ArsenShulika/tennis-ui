@@ -143,6 +143,17 @@
   font-weight: 600;
 }
 
+.userInfo {
+  display: grid;
+  gap: 4px;
+}
+
+.userLine {
+  color: #64748b;
+  font-size: 12px;
+  line-height: 1.4;
+}
+
 .actions {
   display: flex;
   justify-content: flex-end;
@@ -222,6 +233,10 @@
 
   .bookedBy {
     font-size: 12px;
+  }
+
+  .userLine {
+    font-size: 11px;
   }
 
   .cancelBtn {

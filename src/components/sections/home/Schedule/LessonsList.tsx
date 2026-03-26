@@ -3,6 +3,7 @@ import { deleteLesson, GetAllLessons } from "../../../../api/lessonsapi";
 import { getUserByTelegramId } from "../../../../api/usersapi";
 import { useTelegramUser } from "../../../../hooks/useTelegramUser";
 import { Lesson } from "../../../../types/lesson";
+import { User } from "../../../../types/user";
 import LessonItem from "../../lessons/LessonItem/LessonItem";
 import css from "./LessonsList.module.css";
 
@@ -56,7 +57,7 @@ function parseLessonStart(lesson: Lesson) {
 export default function LessonsList() {
   const { telegramUserId, isAdmin } = useTelegramUser();
   const [lessons, setLessons] = useState<Lesson[]>([]);
-  const [userNamesByTelegramId, setUserNamesByTelegramId] = useState<Record<string, string>>({});
+  const [usersByTelegramId, setUsersByTelegramId] = useState<Record<string, User | null>>({});
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState("");
   const [deletingLessonId, setDeletingLessonId] = useState("");
@@ -64,7 +65,7 @@ export default function LessonsList() {
   useEffect(() => {
     if (!telegramUserId && !isAdmin) {
       setLessons([]);
-      setUserNamesByTelegramId({});
+      setUsersByTelegramId({});
       setError("");
       setIsLoading(false);
       return;
@@ -84,7 +85,7 @@ export default function LessonsList() {
         setLessons(sortedLessons);
 
         if (!isAdmin) {
-          setUserNamesByTelegramId({});
+          setUsersByTelegramId({});
           return;
         }
 
@@ -100,15 +101,15 @@ export default function LessonsList() {
           uniqueTelegramIds.map(async (id) => {
             try {
               const user = await getUserByTelegramId(id);
-              return [id, user.fullName || user.userName || id] as const;
+              return [id, user] as const;
             } catch (userError) {
               console.error(`Failed to load user by telegram id ${id}:`, userError);
-              return [id, id] as const;
+              return [id, null] as const;
             }
           })
         );
 
-        setUserNamesByTelegramId(Object.fromEntries(userEntries));
+        setUsersByTelegramId(Object.fromEntries(userEntries));
       } catch (loadError) {
         console.error("Failed to load lessons:", loadError);
         setError(
@@ -167,7 +168,8 @@ export default function LessonsList() {
               hallLabel={LOCATION_LABELS[lesson.location]}
               typeLabel={TYPE_LABELS[lesson.typeOfLesson]}
               durationLabel={DURATION_LABELS[lesson.duration]}
-              bookedByLabel={isAdmin ? userNamesByTelegramId[lesson.telegramUserId] ?? null : null}
+              bookedByLabel={isAdmin ? usersByTelegramId[lesson.telegramUserId]?.fullName ?? lesson.telegramUserId : null}
+              adminUser={isAdmin ? usersByTelegramId[lesson.telegramUserId] ?? null : null}
               isDeleting={deletingLessonId === lesson._id}
               onCancel={handleDelete}
             />
