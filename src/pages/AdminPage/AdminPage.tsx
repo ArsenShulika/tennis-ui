@@ -21,6 +21,7 @@ const timeOptions = Array.from({ length: 28 }, (_, index) => {
 });
 
 const HOURS_END_MINUTES = 22 * 60;
+const MIN_LESSON_MINUTES = 60;
 
 const locationLabels: Record<LessonLocation, string> = {
   awf: "Hala tenisowa AWF",
@@ -91,6 +92,22 @@ function timeToMinutes(time: string) {
   return hours * 60 + minutes;
 }
 
+function getMaxAvailableMinutes(time: string, blockedTimes: Set<string>) {
+  if (!time || blockedTimes.has(time)) return 0;
+
+  const startMinutes = timeToMinutes(time);
+  let nextBlockedMinutes = HOURS_END_MINUTES;
+
+  blockedTimes.forEach((blockedTime) => {
+    const blockedMinutes = timeToMinutes(blockedTime);
+    if (blockedMinutes > startMinutes && blockedMinutes < nextBlockedMinutes) {
+      nextBlockedMinutes = blockedMinutes;
+    }
+  });
+
+  return Math.max(0, nextBlockedMinutes - startMinutes);
+}
+
 function sortFreeHours(items: FreeHour[]) {
   return [...items].sort((a, b) => {
     const left = parseDateTime(a.date)?.getTime() ?? 0;
@@ -142,7 +159,7 @@ export default function AdminPage() {
   const [date, setDate] = useState("");
   const [time, setTime] = useState("");
   const [location, setLocation] = useState<LessonLocation>("awf");
-  const [duration, setDuration] = useState("60");
+  const [duration, setDuration] = useState(String(MIN_LESSON_MINUTES));
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
@@ -156,10 +173,11 @@ export default function AdminPage() {
   const now = new Date();
   const minDate = formatDateInputValue(now);
   const minTime = date === minDate ? formatTimeInputValue(now) : undefined;
-  const disabledTimeValues = useMemo(() => {
+
+  const blockedTimeValues = useMemo(() => {
     if (!date) return new Set<string>();
 
-    const disabledTimes = new Set<string>();
+    const blockedTimes = new Set<string>();
 
     freeHours.forEach((freeHour) => {
       if (freeHour.location !== location) return;
@@ -169,7 +187,7 @@ export default function AdminPage() {
       const slotsCount = Math.max(1, Math.ceil(freeHour.duration / 30));
 
       for (let index = 0; index < slotsCount; index += 1) {
-        disabledTimes.add(addMinutes(startTime, index * 30));
+        blockedTimes.add(addMinutes(startTime, index * 30));
       }
     });
 
@@ -184,39 +202,31 @@ export default function AdminPage() {
       const slotsCount = Math.max(1, Math.ceil(parseLessonDurationMinutes(lesson.duration) / 30));
 
       for (let index = 0; index < slotsCount; index += 1) {
-        disabledTimes.add(addMinutes(startTime, index * 30));
+        blockedTimes.add(addMinutes(startTime, index * 30));
       }
     });
 
-    return disabledTimes;
+    return blockedTimes;
   }, [date, freeHours, futureLessons, location]);
 
   const availableTimeOptions = useMemo(
     () =>
       timeOptions
         .filter((option) => !minTime || option.value >= minTime)
-        .map((option) => ({
-          ...option,
-          disabled: disabledTimeValues.has(option.value),
-        })),
-    [disabledTimeValues, minTime]
+        .map((option) => {
+          const maxMinutes = getMaxAvailableMinutes(option.value, blockedTimeValues);
+          return {
+            ...option,
+            disabled: maxMinutes < MIN_LESSON_MINUTES,
+          };
+        }),
+    [blockedTimeValues, minTime]
   );
 
-  const maxDurationMinutes = useMemo(() => {
-    if (!time || disabledTimeValues.has(time)) return 0;
-
-    const startMinutes = timeToMinutes(time);
-    let nextBlockedMinutes = HOURS_END_MINUTES;
-
-    disabledTimeValues.forEach((disabledTime) => {
-      const disabledMinutes = timeToMinutes(disabledTime);
-      if (disabledMinutes > startMinutes && disabledMinutes < nextBlockedMinutes) {
-        nextBlockedMinutes = disabledMinutes;
-      }
-    });
-
-    return Math.max(30, nextBlockedMinutes - startMinutes);
-  }, [disabledTimeValues, time]);
+  const maxDurationMinutes = useMemo(
+    () => getMaxAvailableMinutes(time, blockedTimeValues),
+    [blockedTimeValues, time]
+  );
 
   const loadAdminData = async () => {
     try {
@@ -250,18 +260,23 @@ export default function AdminPage() {
   }, []);
 
   useEffect(() => {
-    if (time && disabledTimeValues.has(time)) {
+    if (time && maxDurationMinutes < MIN_LESSON_MINUTES) {
       setTime("");
     }
-  }, [disabledTimeValues, time]);
+  }, [maxDurationMinutes, time]);
 
   useEffect(() => {
     if (!duration) return;
 
     const normalizedDuration = Number(duration);
-    if (!Number.isFinite(normalizedDuration) || maxDurationMinutes <= 0) return;
+    if (!Number.isFinite(normalizedDuration)) return;
 
-    if (normalizedDuration > maxDurationMinutes) {
+    if (normalizedDuration < MIN_LESSON_MINUTES) {
+      setDuration(String(MIN_LESSON_MINUTES));
+      return;
+    }
+
+    if (maxDurationMinutes > 0 && normalizedDuration > maxDurationMinutes) {
       setDuration(String(maxDurationMinutes));
     }
   }, [duration, maxDurationMinutes]);
@@ -304,8 +319,16 @@ export default function AdminPage() {
       return;
     }
 
-    if (disabledTimeValues.has(time)) {
-      setError("Цей час уже відкритий для вибраної локації.");
+    if (maxDurationMinutes < MIN_LESSON_MINUTES) {
+      setError(
+        "Цей час недоступний для відкриття, бо слот перетнеться з уже відкритими або заброньованими годинами."
+      );
+      setMessage("");
+      return;
+    }
+
+    if (Number(duration) < MIN_LESSON_MINUTES) {
+      setError(`Мінімальна тривалість тренування становить ${MIN_LESSON_MINUTES} хв.`);
       setMessage("");
       return;
     }
@@ -333,7 +356,7 @@ export default function AdminPage() {
       setDate("");
       setTime("");
       setLocation("awf");
-      setDuration("60");
+      setDuration(String(MIN_LESSON_MINUTES));
       await loadAdminData();
     } catch (submitError) {
       console.error("Failed to create free hour:", submitError);
@@ -436,7 +459,7 @@ export default function AdminPage() {
           <input
             id="free-hour-duration"
             type="number"
-            min={30}
+            min={MIN_LESSON_MINUTES}
             step={30}
             max={maxDurationMinutes || undefined}
             value={duration}
