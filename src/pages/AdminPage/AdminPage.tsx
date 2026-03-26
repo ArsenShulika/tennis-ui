@@ -150,8 +150,23 @@ export default function AdminPage() {
       }
     });
 
+    futureLessons.forEach((lesson) => {
+      if (lesson.location !== location) return;
+
+      const lessonStart = getLessonStart(lesson);
+      if (!lessonStart) return;
+      if (formatDateInputValue(lessonStart) !== date) return;
+
+      const startTime = formatTimeInputValue(lessonStart);
+      const slotsCount = Math.max(1, Math.ceil(parseLessonDurationMinutes(lesson.duration) / 30));
+
+      for (let index = 0; index < slotsCount; index += 1) {
+        disabledTimes.add(addMinutes(startTime, index * 30));
+      }
+    });
+
     return disabledTimes;
-  }, [date, freeHours, location]);
+  }, [date, freeHours, futureLessons, location]);
 
   const availableTimeOptions = useMemo(
     () =>

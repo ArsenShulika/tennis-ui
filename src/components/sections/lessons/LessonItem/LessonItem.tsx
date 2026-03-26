@@ -83,55 +83,65 @@ export default function LessonItem({
   const startTime = formatStartTime(parsedDate, lesson.time);
   const userName = adminUser?.userName ? `@${adminUser.userName}` : null;
   const phoneNumber = formatPhoneNumber(adminUser?.phoneNumber);
-  const fullName = adminUser?.fullName?.trim() || null;
+  const fullName = adminUser?.fullName?.trim() || bookedByLabel || null;
 
   return (
     <li className={css.item}>
-      <div className={css.main}>
-        <div className={css.headerMeta}>
-          <span className={css.headerDate}>{headerDate}</span>
-          <span className={css.inlineMeta}>
-            <span className={css.metaIcon} aria-hidden />
-            <span>{startTime}</span>
+      <div className={css.topRow}>
+        <div className={css.scheduleMeta}>
+          <span className={css.dateText}>{headerDate}</span>
+          <span className={css.metaPill}>
+            <span className={css.clockIcon} aria-hidden />
+            {startTime}
           </span>
-          <span className={css.inlineMeta}>
-            <span className={`${css.metaIcon} ${css.metaDurationIcon}`} aria-hidden />
-            <span>{durationLabel}</span>
+          <span className={css.metaPill}>
+            <span className={css.durationIcon} aria-hidden />
+            {durationLabel}
           </span>
         </div>
 
-        <div className={css.lessonRow}>
-          <h3 className={css.hall}>{hallLabel}</h3>
-          <span className={css.type}>
-            <span className={css.typeIcon} aria-hidden />
-            <span>{typeLabel}</span>
-          </span>
-        </div>
+        <span className={css.statusBadge}>Заброньовано</span>
       </div>
 
-      <div className={css.footer}>
-        <div className={css.footerInfo}>
-          {bookedByLabel ? <div className={css.bookedBy}>Бронювання: {bookedByLabel}</div> : null}
-          {adminUser ? (
-            <div className={css.userInfo}>
-              {fullName ? <div className={css.userLine}>Ім'я: {fullName}</div> : null}
-              {userName ? <div className={css.userLine}>Telegram: {userName}</div> : null}
-              {phoneNumber ? <div className={css.userLine}>Телефон: {phoneNumber}</div> : null}
-            </div>
-          ) : null}
-        </div>
+      <div className={css.lessonInfo}>
+        <h3 className={css.hall}>{hallLabel}</h3>
+        <span className={css.typeBadge}>{typeLabel}</span>
+      </div>
 
-        <div className={css.actions}>
-          <button
-            type="button"
-            className={css.cancelBtn}
-            onClick={() => onCancel?.(lesson)}
-            aria-label="Скасувати бронювання"
-            disabled={isDeleting}
-          >
-            {isDeleting ? "Видалення..." : "Скасувати"}
-          </button>
+      {adminUser ? (
+        <div className={css.adminPanel}>
+          <div className={css.adminHeader}>Дані клієнта</div>
+          <div className={css.adminGrid}>
+            <div className={css.infoItem}>
+              <span className={css.infoLabel}>Ім'я</span>
+              <span className={css.infoValue}>{fullName ?? "Не вказано"}</span>
+            </div>
+            <div className={css.infoItem}>
+              <span className={css.infoLabel}>Telegram</span>
+              <span className={css.infoValue}>{userName ?? "Не вказано"}</span>
+            </div>
+            <div className={css.infoItem}>
+              <span className={css.infoLabel}>Телефон</span>
+              <span className={css.infoValue}>{phoneNumber ?? "Не вказано"}</span>
+            </div>
+            <div className={css.infoItem}>
+              <span className={css.infoLabel}>Telegram ID</span>
+              <span className={css.infoValue}>{lesson.telegramUserId}</span>
+            </div>
+          </div>
         </div>
+      ) : null}
+
+      <div className={css.footer}>
+        <button
+          type="button"
+          className={css.cancelBtn}
+          onClick={() => onCancel?.(lesson)}
+          aria-label="Скасувати бронювання"
+          disabled={isDeleting}
+        >
+          {isDeleting ? "Видалення..." : "Скасувати"}
+        </button>
       </div>
     </li>
   );

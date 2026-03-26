@@ -67,6 +67,11 @@
   font-weight: 600;
 }
 
+.dropdown :global(.ant-select-item-option-disabled) {
+  color: #94a3b8 !important;
+  background: #f8fafc !important;
+}
+
 @media (max-width: 640px) {
   .select :global(.ant-select-selector) {
     height: 44px !important;

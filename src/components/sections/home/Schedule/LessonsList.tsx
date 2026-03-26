@@ -168,7 +168,9 @@ export default function LessonsList() {
               hallLabel={LOCATION_LABELS[lesson.location]}
               typeLabel={TYPE_LABELS[lesson.typeOfLesson]}
               durationLabel={DURATION_LABELS[lesson.duration]}
-              bookedByLabel={isAdmin ? usersByTelegramId[lesson.telegramUserId]?.fullName ?? lesson.telegramUserId : null}
+              bookedByLabel={
+                isAdmin ? usersByTelegramId[lesson.telegramUserId]?.fullName ?? lesson.telegramUserId : null
+              }
               adminUser={isAdmin ? usersByTelegramId[lesson.telegramUserId] ?? null : null}
               isDeleting={deletingLessonId === lesson._id}
               onCancel={handleDelete}
