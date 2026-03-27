@@ -1,4 +1,4 @@
-import { FormEvent, PointerEvent, useEffect, useMemo, useRef, useState } from "react";
+import { FormEvent, useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import { GetFreeHours } from "../../../../api/freeHours";
 import { createLesson, GetAllLessons } from "../../../../api/lessonsapi";
@@ -11,7 +11,8 @@ import {
   LessonType,
   NewLesson,
 } from "../../../../types/lesson";
-import NiceSelect from "../../../shared/NiceSelect/NiceSelect";
+import CustomDatePicker from "../../../shared/CustomDatePicker/CustomDatePicker";
+import CustomDropdownSelect from "../../../shared/CustomDropdownSelect/CustomDropdownSelect";
 import css from "./BookingForm.module.css";
 
 type SlotStatus = "busy" | "free" | "booked";
@@ -66,16 +67,16 @@ function pad2(value: number) {
   return value.toString().padStart(2, "0");
 }
 
-function formatDate(d: Date) {
-  return `${d.getFullYear()}-${pad2(d.getMonth() + 1)}-${pad2(d.getDate())}`;
+function formatDate(date: Date) {
+  return `${date.getFullYear()}-${pad2(date.getMonth() + 1)}-${pad2(date.getDate())}`;
 }
 
-function formatTime(d: Date) {
-  return `${pad2(d.getHours())}:${pad2(d.getMinutes())}`;
+function formatTime(date: Date) {
+  return `${pad2(date.getHours())}:${pad2(date.getMinutes())}`;
 }
 
-function formatDateTime(d: Date) {
-  return `${formatDate(d)}T${formatTime(d)}:${pad2(d.getSeconds())}`;
+function formatDateTime(date: Date) {
+  return `${formatDate(date)}T${formatTime(date)}:${pad2(date.getSeconds())}`;
 }
 
 function parseServerDateTime(value: string) {
@@ -232,7 +233,6 @@ export default function BookingForm() {
   const [loadError, setLoadError] = useState("");
   const [submitError, setSubmitError] = useState("");
   const [submitMessage, setSubmitMessage] = useState("");
-  const dateRef = useRef<HTMLInputElement | null>(null);
   const minDate = formatDate(new Date());
 
   const presetDate = searchParams.get("date") ?? "";
@@ -259,6 +259,19 @@ export default function BookingForm() {
         label: `${slot.time} • ${LOCATION_LABELS[slot.location]}`,
       })),
     [availableSlots]
+  );
+
+  const locationOptions = useMemo(
+    () =>
+      selectedSlot
+        ? [
+            {
+              value: selectedSlot.location,
+              label: LOCATION_LABELS[selectedSlot.location],
+            },
+          ]
+        : [],
+    [selectedSlot]
   );
 
   const durationOptions = useMemo(() => {
@@ -335,20 +348,8 @@ export default function BookingForm() {
     loadAvailability();
   }, [date, minDate, presetSlotValue]);
 
-  const handleDatePointerDown = (event: PointerEvent<HTMLInputElement>) => {
-    const element = event.currentTarget as HTMLInputElement & { showPicker?: () => void };
-    try {
-      element.showPicker?.();
-    } catch {
-      // Ignore browsers that do not allow programmatic picker opening here.
-    }
-  };
-
   const handleDateChange = (nextValue: string) => {
     setDate(nextValue);
-    window.setTimeout(() => {
-      dateRef.current?.blur();
-    }, 0);
   };
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
@@ -400,66 +401,62 @@ export default function BookingForm() {
 
       <label htmlFor="date">Дата:</label>
       <div className={css.selectField}>
-        <input
-          type="date"
-          name="date"
+        <CustomDatePicker
           id="date"
           value={date}
-          ref={dateRef}
-          onChange={(event) => handleDateChange(event.target.value)}
-          onPointerDown={handleDatePointerDown}
-          min={minDate}
-          required
+          onChange={handleDateChange}
+          minDate={minDate}
+          label="Дата"
         />
       </div>
 
       <label htmlFor="time">Час:</label>
       <div className={css.selectField}>
-        <NiceSelect
+        <CustomDropdownSelect
           id="time"
-          name="time"
+          value={selectedSlotValue}
           placeholder={isLoading ? "Завантаження..." : "Оберіть час"}
           options={timeOptions}
-          defaultValue={selectedSlotValue}
           onChange={setSelectedSlotValue}
-          required
+          emptyText="Немає доступних годин на цю дату"
+          disabled={isLoading}
         />
       </div>
 
       <label htmlFor="location">Локація:</label>
       <div className={css.selectField}>
-        <input
+        <CustomDropdownSelect
           id="location"
-        type="text"
-        value={selectedSlot ? LOCATION_LABELS[selectedSlot.location] : ""}
-        placeholder="Локація визначається автоматично"
-        className={`${css.readonlyField} ${css.compactField}`}
-          readOnly
+          value={selectedSlot?.location ?? ""}
+          placeholder="Локація визначається автоматично"
+          options={locationOptions}
+          onChange={() => {}}
+          emptyText="Оберіть час, щоб побачити локацію"
+          disabled
         />
       </div>
 
       <label htmlFor="duration">Тривалість:</label>
       <div className={css.selectField}>
-        <NiceSelect
+        <CustomDropdownSelect
           id="duration"
-          name="duration"
+          value={durationValueForSelect}
           placeholder="Виберіть тривалість заняття"
           options={durationOptions}
-          defaultValue={durationValueForSelect}
           onChange={(value) => setDuration(value as LessonDuration)}
-          required
+          emptyText="Немає доступної тривалості"
         />
       </div>
 
       <label htmlFor="typeOfLesson">Тип заняття:</label>
       <div className={css.selectField}>
-        <NiceSelect
+        <CustomDropdownSelect
           id="typeOfLesson"
-          name="typeOfLesson"
+          value={typeOfLesson}
           placeholder="Оберіть тип заняття"
           options={LESSON_TYPE_OPTIONS}
-          defaultValue={typeOfLesson}
           onChange={(value) => setTypeOfLesson(value as LessonType)}
+          emptyText="Немає доступних типів занять"
         />
       </div>
 

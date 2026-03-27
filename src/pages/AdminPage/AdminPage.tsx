@@ -2,7 +2,8 @@ import { FormEvent, useEffect, useMemo, useRef, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import { createFreeHour, deleteFreeHour, GetFreeHours } from "../../api/freeHours";
 import { GetAllLessons } from "../../api/lessonsapi";
-import NiceSelect from "../../components/shared/NiceSelect/NiceSelect";
+import CustomDatePicker from "../../components/shared/CustomDatePicker/CustomDatePicker";
+import CustomDropdownSelect from "../../components/shared/CustomDropdownSelect/CustomDropdownSelect";
 import { FreeHour } from "../../types/freeHour";
 import { Lesson, LessonDuration, LessonLocation } from "../../types/lesson";
 import css from "./AdminPage.module.css";
@@ -171,7 +172,6 @@ export default function AdminPage() {
   const [listError, setListError] = useState("");
   const [deletingId, setDeletingId] = useState("");
   const formRef = useRef<HTMLFormElement | null>(null);
-  const dateRef = useRef<HTMLInputElement | null>(null);
 
   const presetDate = searchParams.get("date") ?? "";
   const presetTime = searchParams.get("time") ?? "";
@@ -321,20 +321,8 @@ export default function AdminPage() {
     return "Наразі немає відкритих годин.";
   }, [isLoadingList, listError]);
 
-  const openDatePicker = () => {
-    const element = dateRef.current as unknown as { showPicker?: () => void } | null;
-    try {
-      element?.showPicker?.();
-    } catch {
-      // Ignore browsers that do not allow programmatic picker opening here.
-    }
-  };
-
   const handleDateChange = (nextValue: string) => {
     setDate(nextValue);
-    window.setTimeout(() => {
-      dateRef.current?.blur();
-    }, 0);
   };
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
@@ -458,16 +446,12 @@ export default function AdminPage() {
           Дата
         </label>
         <div className={css.selectField}>
-          <input
+          <CustomDatePicker
             id="free-hour-date"
-            type="date"
             value={date}
-            ref={dateRef}
-            onChange={(event) => handleDateChange(event.target.value)}
-            onPointerDown={openDatePicker}
-            className={css.input}
-            min={minDate}
-            required
+            onChange={handleDateChange}
+            minDate={minDate}
+            label="Дата"
           />
         </div>
 
@@ -475,14 +459,13 @@ export default function AdminPage() {
           Час
         </label>
         <div className={css.selectField}>
-          <NiceSelect
+          <CustomDropdownSelect
             id="free-hour-time"
-            name="time"
+            value={time}
             placeholder="Оберіть час"
             options={availableTimeOptions}
-            defaultValue={time}
             onChange={setTime}
-            required
+            emptyText="Немає доступного часу"
           />
         </div>
 
@@ -490,14 +473,13 @@ export default function AdminPage() {
           Локація
         </label>
         <div className={css.selectField}>
-          <NiceSelect
+          <CustomDropdownSelect
             id="free-hour-location"
-            name="location"
+            value={location}
             placeholder="Оберіть локацію"
             options={locationOptions}
-            defaultValue={location}
             onChange={(value) => setLocation(value as LessonLocation)}
-            required
+            emptyText="Немає доступних локацій"
           />
         </div>
 
@@ -516,9 +498,11 @@ export default function AdminPage() {
             className={css.input}
             inputMode="numeric"
             aria-invalid={Boolean(durationStepHint)}
+            placeholder="Наприклад: 30, 60, 90"
             required
           />
         </div>
+        <p className={css.fieldHint}>Введіть тривалість у хвилинах. Значення має бути кратним 30.</p>
         {durationStepHint ? <p className={css.fieldHintError}>{durationStepHint}</p> : null}
 
         {time && maxDurationMinutes > 0 ? (
