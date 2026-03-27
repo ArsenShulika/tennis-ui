@@ -85,7 +85,7 @@
   border: 1px solid #c5d0dd;
   border-radius: var(--field-radius);
   background-color: #ffffff;
-  color: #132238;
+  color: #5b6b80;
   font-size: 1rem;
   transition: border-color 0.2s ease, box-shadow 0.2s ease;
   box-sizing: border-box;
