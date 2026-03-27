@@ -1,4 +1,4 @@
-﻿import { FormEvent, useEffect, useMemo, useRef, useState } from "react";
+import { FormEvent, useEffect, useMemo, useRef, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import { createFreeHour, deleteFreeHour, GetFreeHours } from "../../api/freeHours";
 import { GetAllLessons } from "../../api/lessonsapi";
@@ -20,6 +20,11 @@ const timeOptions = Array.from({ length: 28 }, (_, index) => {
   const minutes = String(totalMinutes % 60).padStart(2, "0");
   const value = `${hours}:${minutes}`;
   return { value, label: value };
+});
+
+const durationOptions = Array.from({ length: 24 }, (_, index) => {
+  const minutes = (index + 1) * 30;
+  return { value: String(minutes), label: `${minutes} хв` };
 });
 
 const HOURS_END_MINUTES = 22 * 60;
@@ -232,13 +237,15 @@ export default function AdminPage() {
     () => getMaxAvailableMinutes(time, blockedTimeValues),
     [blockedTimeValues, time]
   );
-  const durationValue = Number(duration);
-  const isDurationStepValid =
-    duration.trim() !== "" && Number.isFinite(durationValue) && durationValue % 30 === 0;
-  const durationStepHint =
-    duration.trim() !== "" && !isDurationStepValid
-      ? "Đ˘Ń€Đ¸Đ˛Đ°Đ»Ń–ŃŃ‚ŃŚ ĐĽĐ°Ń” Đ±ŃŃ‚Đ¸ ĐşŃ€Đ°Ń‚Đ˝ĐľŃŽ 30 Ń…Đ˛. ĐťĐ°ĐżŃ€Đ¸ĐşĐ»Đ°Đ´: 30, 60, 90."
-      : "";
+
+  const availableDurationOptions = useMemo(
+    () =>
+      durationOptions.map((option) => ({
+        ...option,
+        disabled: !time || Number(option.value) > maxDurationMinutes,
+      })),
+    [maxDurationMinutes, time]
+  );
 
   const loadAdminData = async () => {
     try {
@@ -261,7 +268,7 @@ export default function AdminPage() {
       setFutureLessons(lessonsResponse.lessons);
     } catch (loadError) {
       console.error("Failed to load admin data:", loadError);
-      setListError("ĐťĐµ Đ˛Đ´Đ°Đ»ĐľŃŃŹ Đ·Đ°Đ˛Đ°Đ˝Ń‚Đ°Đ¶Đ¸Ń‚Đ¸ Đ˛Ń–Đ´ĐşŃ€Đ¸Ń‚Ń– ĐłĐľĐ´Đ¸Đ˝Đ¸.");
+      setListError("Не вдалося завантажити відкриті слоти.");
     } finally {
       setIsLoadingList(false);
     }
@@ -316,9 +323,9 @@ export default function AdminPage() {
   }, [duration, maxDurationMinutes]);
 
   const listEmptyText = useMemo(() => {
-    if (isLoadingList) return "Đ—Đ°Đ˛Đ°Đ˝Ń‚Đ°Đ¶ĐµĐ˝Đ˝ŃŹ Đ˛Ń–Đ´ĐşŃ€Đ¸Ń‚Đ¸Ń… ĐłĐľĐ´Đ¸Đ˝...";
+    if (isLoadingList) return "Завантаження відкритих слотів...";
     if (listError) return listError;
-    return "ĐťĐ°Ń€Đ°Đ·Ń– Đ˝ĐµĐĽĐ°Ń” Đ˛Ń–Đ´ĐşŃ€Đ¸Ń‚Đ¸Ń… ĐłĐľĐ´Đ¸Đ˝.";
+    return "Наразі немає відкритих слотів.";
   }, [isLoadingList, listError]);
 
   const handleDateChange = (nextValue: string) => {
@@ -329,41 +336,35 @@ export default function AdminPage() {
     event.preventDefault();
 
     if (!date || !time) {
-      setError("ĐžĐ±ĐµŃ€Ń–Ń‚ŃŚ Đ´Đ°Ń‚Ń Ń‚Đ° Ń‡Đ°Ń.");
+      setError("Оберіть дату та час.");
       setMessage("");
       return;
     }
 
     const selectedDateTime = parseDateTime(`${date}T${time}:00`);
     if (!selectedDateTime || selectedDateTime.getTime() < Date.now()) {
-      setError("ĐťĐµ ĐĽĐľĐ¶Đ˝Đ° Đ˛Ń–Đ´ĐşŃ€Đ¸Đ˛Đ°Ń‚Đ¸ ĐłĐľĐ´Đ¸Đ˝Đ¸ Đ˛ ĐĽĐ¸Đ˝ŃĐ»ĐľĐĽŃ.");
+      setError("Не можна відкривати слоти у минулому.");
       setMessage("");
       return;
     }
 
     if (maxDurationMinutes < MIN_LESSON_MINUTES) {
       setError(
-        "Đ¦ĐµĐą Ń‡Đ°Ń Đ˝ĐµĐ´ĐľŃŃ‚ŃĐżĐ˝Đ¸Đą Đ´Đ»ŃŹ Đ˛Ń–Đ´ĐşŃ€Đ¸Ń‚Ń‚ŃŹ, Đ±Đľ ŃĐ»ĐľŃ‚ ĐżĐµŃ€ĐµŃ‚Đ˝ĐµŃ‚ŃŚŃŃŹ Đ· ŃĐ¶Đµ Đ˛Ń–Đ´ĐşŃ€Đ¸Ń‚Đ¸ĐĽĐ¸ Đ°Đ±Đľ Đ·Đ°Đ±Ń€ĐľĐ˝ŃŚĐľĐ˛Đ°Đ˝Đ¸ĐĽĐ¸ ĐłĐľĐ´Đ¸Đ˝Đ°ĐĽĐ¸."
+        "Цей час недоступний для відкриття, бо слот перетнеться з уже відкритими або заброньованими годинами."
       );
       setMessage("");
       return;
     }
 
     if (Number(duration) < MIN_LESSON_MINUTES) {
-      setError(`ĐśŃ–Đ˝Ń–ĐĽĐ°Đ»ŃŚĐ˝Đ° Ń‚Ń€Đ¸Đ˛Đ°Đ»Ń–ŃŃ‚ŃŚ Ń‚Ń€ĐµĐ˝ŃĐ˛Đ°Đ˝Đ˝ŃŹ ŃŃ‚Đ°Đ˝ĐľĐ˛Đ¸Ń‚ŃŚ ${MIN_LESSON_MINUTES} Ń…Đ˛.`);
-      setMessage("");
-      return;
-    }
-
-    if (!isDurationStepValid) {
-      setError("Đ˘Ń€Đ¸Đ˛Đ°Đ»Ń–ŃŃ‚ŃŚ ĐĽĐ°Ń” Đ±ŃŃ‚Đ¸ ĐşŃ€Đ°Ń‚Đ˝ĐľŃŽ 30 Ń…Đ˛.");
+      setError(`Мінімальна тривалість тренування становить ${MIN_LESSON_MINUTES} хв.`);
       setMessage("");
       return;
     }
 
     if (Number(duration) > maxDurationMinutes) {
       setError(
-        `Đ˘Ń€Đ¸Đ˛Đ°Đ»Ń–ŃŃ‚ŃŚ Đ˝Đµ ĐĽĐľĐ¶Đµ ĐżĐµŃ€ĐµĐ˛Đ¸Ń‰ŃĐ˛Đ°Ń‚Đ¸ ${maxDurationMinutes} Ń…Đ˛, Ń‰ĐľĐ± Đ˝Đµ ĐżĐµŃ€ĐµĐşŃ€Đ¸Đ˛Đ°Ń‚Đ¸ Đ˛Đ¶Đµ Đ˛Ń–Đ´ĐşŃ€Đ¸Ń‚Ń– Đ°Đ±Đľ Đ·Đ°Đ±Ń€ĐľĐ˝ŃŚĐľĐ˛Đ°Đ˝Ń– ŃĐ»ĐľŃ‚Đ¸.`
+        `Тривалість не може перевищувати ${maxDurationMinutes} хв, щоб не перекривати вже відкриті або заброньовані слоти.`
       );
       setMessage("");
       return;
@@ -380,7 +381,7 @@ export default function AdminPage() {
         date: `${date}T${time}:00`,
       });
 
-      setMessage("ĐˇĐ»ĐľŃ‚ Đ´ĐľŃŃ‚ŃĐżĐ˝ĐľŃŃ‚Ń– ŃŃĐżŃ–ŃĐ˝Đľ Đ˛Ń–Đ´ĐşŃ€Đ¸Ń‚Đľ.");
+      setMessage("Слот доступності успішно відкрито.");
       setDate("");
       setTime("");
       setLocation("awf");
@@ -388,7 +389,7 @@ export default function AdminPage() {
       await loadAdminData();
     } catch (submitError) {
       console.error("Failed to create free hour:", submitError);
-      setError("ĐťĐµ Đ˛Đ´Đ°Đ»ĐľŃŃŹ Đ˛Ń–Đ´ĐşŃ€Đ¸Ń‚Đ¸ ŃĐ»ĐľŃ‚ Đ´ĐľŃŃ‚ŃĐżĐ˝ĐľŃŃ‚Ń–. ĐˇĐżŃ€ĐľĐ±ŃĐąŃ‚Đµ Ń‰Đµ Ń€Đ°Đ·.");
+      setError("Не вдалося відкрити слот доступності. Спробуйте ще раз.");
     } finally {
       setIsSubmitting(false);
     }
@@ -396,26 +397,16 @@ export default function AdminPage() {
 
   const handleDelete = async (freeHour: FreeHour) => {
     const overlappingLesson = findOverlappingLesson(freeHour, futureLessons);
-    if (Boolean(overlappingLesson)) {
+    if (overlappingLesson) {
       setListError(
-        `ĐťĐµĐĽĐľĐ¶Đ»Đ¸Đ˛Đľ Đ·Đ°ĐşŃ€Đ¸Ń‚Đ¸ ŃĐ»ĐľŃ‚ Đ˝Đ° ${formatDatePart(freeHour.date)} Đľ ${formatTimePart(
+        `Неможливо закрити слот на ${formatDatePart(freeHour.date)} о ${formatTimePart(
           freeHour.date
-        )}, Đ±Đľ Đ˝Đ° Ń†ĐµĐą Ń‡Đ°Ń ŃĐ¶Đµ Ń” Đ·Đ°Đ±Ń€ĐľĐ˝ŃŚĐľĐ˛Đ°Đ˝Đµ Ń‚Ń€ĐµĐ˝ŃĐ˛Đ°Đ˝Đ˝ŃŹ. ĐˇĐżĐľŃ‡Đ°Ń‚ĐşŃ ŃĐşĐ°ŃŃĐąŃ‚Đµ Đ±Ń€ĐľĐ˝ŃŽĐ˛Đ°Đ˝Đ˝ŃŹ.`
+        )}, бо на цей час уже є заброньоване тренування. Спочатку скасуйте бронювання.`
       );
       return;
     }
-    const confirmed = overlappingLesson
-      ? window.confirm(
-          `ĐťĐ° ${formatDatePart(overlappingLesson.date)} Đľ ${formatTimePart(
-            overlappingLesson.date.includes("T") || overlappingLesson.date.includes(" ")
-              ? overlappingLesson.date
-              : `${overlappingLesson.date}T${overlappingLesson.time}:00`
-          )} Đ˛Đ¶Đµ Đ·Đ°Ń€ĐµĐ·ĐµŃ€Đ˛ĐľĐ˛Đ°Đ˝Đµ Ń‚Ń€ĐµĐ˝ŃĐ˛Đ°Đ˝Đ˝ŃŹ Ń‚Ń€Đ¸Đ˛Đ°Đ»Ń–ŃŃ‚ŃŽ ${parseLessonDurationMinutes(
-            overlappingLesson.duration
-          )} Ń…Đ˛. Đ’Đ¸Đ´Đ°Đ»Đ¸Ń‚Đ¸ Đ˛Ń–Đ´ĐşŃ€Đ¸Ń‚Ń ĐłĐľĐ´Đ¸Đ˝Ń Đ˛ŃĐµ ĐľĐ´Đ˝Đľ?`
-        )
-      : window.confirm("Đ’Đ¸Đ´Đ°Đ»Đ¸Ń‚Đ¸ Ń†ŃŽ Đ˛Ń–Đ´ĐşŃ€Đ¸Ń‚Ń ĐłĐľĐ´Đ¸Đ˝Ń?");
 
+    const confirmed = window.confirm("Видалити цей відкритий слот?");
     if (!confirmed) return;
 
     try {
@@ -425,7 +416,7 @@ export default function AdminPage() {
       setFreeHours((current) => current.filter((item) => item._id !== freeHour._id));
     } catch (deleteError) {
       console.error("Failed to delete free hour:", deleteError);
-      setListError("ĐťĐµ Đ˛Đ´Đ°Đ»ĐľŃŃŹ Đ˛Đ¸Đ´Đ°Đ»Đ¸Ń‚Đ¸ Đ˛Ń–Đ´ĐşŃ€Đ¸Ń‚Ń ĐłĐľĐ´Đ¸Đ˝Ń.");
+      setListError("Не вдалося видалити відкритий слот.");
     } finally {
       setDeletingId("");
     }
@@ -435,10 +426,10 @@ export default function AdminPage() {
     <div className={css.adminPage}>
       <form ref={formRef} className={css.form} onSubmit={handleSubmit}>
         <div className={css.headingBlock}>
-          <h1 className={css.title}>Đ’Ń–Đ´ĐşŃ€Đ¸Ń‚Đ¸ Đ˝ĐľĐ˛Ń– ŃĐ»ĐľŃ‚Đ¸</h1>
+          <h1 className={css.title}>Відкрити нові слоти</h1>
           <p className={css.subtitle}>
-            ĐžĐ±ĐµŃ€Ń–Ń‚ŃŚ Đ´Đ°Ń‚Ń, Ń‡Đ°Ń, Đ»ĐľĐşĐ°Ń†Ń–ŃŽ Ń‚Đ° Ń‚Ń€Đ¸Đ˛Đ°Đ»Ń–ŃŃ‚ŃŚ, Ń‰ĐľĐ± Đ˛Ń–Đ´ĐşŃ€Đ¸Ń‚Đ¸ Đ˝ĐľĐ˛Đ¸Đą ŃĐ»ĐľŃ‚ Đ´Đ»ŃŹ
-            Đ±Ń€ĐľĐ˝ŃŽĐ˛Đ°Đ˝Đ˝ŃŹ.
+            Оберіть дату, час, локацію та тривалість, щоб відкрити новий слот для
+            бронювання.
           </p>
         </div>
 
@@ -462,10 +453,10 @@ export default function AdminPage() {
           <CustomDropdownSelect
             id="free-hour-time"
             value={time}
-            placeholder="ĐžĐ±ĐµŃ€Ń–Ń‚ŃŚ Ń‡Đ°Ń"
+            placeholder="Оберіть час"
             options={availableTimeOptions}
             onChange={setTime}
-            emptyText="ĐťĐµĐĽĐ°Ń” Đ´ĐľŃŃ‚ŃĐżĐ˝ĐľĐłĐľ Ń‡Đ°ŃŃ"
+            emptyText="Немає доступного часу"
           />
         </div>
 
@@ -476,10 +467,10 @@ export default function AdminPage() {
           <CustomDropdownSelect
             id="free-hour-location"
             value={location}
-            placeholder="ĐžĐ±ĐµŃ€Ń–Ń‚ŃŚ Đ»ĐľĐşĐ°Ń†Ń–ŃŽ"
+            placeholder="Оберіть локацію"
             options={locationOptions}
             onChange={(value) => setLocation(value as LessonLocation)}
-            emptyText="ĐťĐµĐĽĐ°Ń” Đ´ĐľŃŃ‚ŃĐżĐ˝Đ¸Ń… Đ»ĐľĐşĐ°Ń†Ń–Đą"
+            emptyText="Немає доступних локацій"
           />
         </div>
 
@@ -487,27 +478,19 @@ export default function AdminPage() {
           Тривалість:
         </label>
         <div className={css.selectField}>
-          <input
+          <CustomDropdownSelect
             id="free-hour-duration"
-            type="number"
-            min={MIN_LESSON_MINUTES}
-            step={30}
-            max={maxDurationMinutes || undefined}
             value={duration}
-            onChange={(event) => setDuration(event.target.value)}
-            className={css.input}
-            inputMode="numeric"
-            aria-invalid={Boolean(durationStepHint)}
-            placeholder="ĐťĐ°ĐżŃ€Đ¸ĐşĐ»Đ°Đ´: 30, 60, 90"
-            required
+            placeholder="Оберіть тривалість"
+            options={availableDurationOptions}
+            onChange={setDuration}
+            emptyText="Немає доступної тривалості"
           />
         </div>
-        <p className={css.fieldHint}>Đ’Đ˛ĐµĐ´Ń–Ń‚ŃŚ Ń‚Ń€Đ¸Đ˛Đ°Đ»Ń–ŃŃ‚ŃŚ Ń Ń…Đ˛Đ¸Đ»Đ¸Đ˝Đ°Ń…. Đ—Đ˝Đ°Ń‡ĐµĐ˝Đ˝ŃŹ ĐĽĐ°Ń” Đ±ŃŃ‚Đ¸ ĐşŃ€Đ°Ń‚Đ˝Đ¸ĐĽ 30.</p>
-        {durationStepHint ? <p className={css.fieldHintError}>{durationStepHint}</p> : null}
 
         {time && maxDurationMinutes > 0 ? (
           <p className={css.sectionHint}>
-            ĐśĐ°ĐşŃĐ¸ĐĽĐ°Đ»ŃŚĐ˝Đ° Ń‚Ń€Đ¸Đ˛Đ°Đ»Ń–ŃŃ‚ŃŚ Đ´Đ»ŃŹ Ń†ŃŚĐľĐłĐľ ŃŃ‚Đ°Ń€Ń‚Ń: {maxDurationMinutes} Ń…Đ˛.
+            Максимальна тривалість для цього старту: {maxDurationMinutes} хв.
           </p>
         ) : null}
 
@@ -515,15 +498,15 @@ export default function AdminPage() {
         {error ? <p className={css.error}>{error}</p> : null}
 
         <button type="submit" className={css.submitButton} disabled={isSubmitting}>
-          {isSubmitting ? "Đ—Đ±ĐµŃ€ĐµĐ¶ĐµĐ˝Đ˝ŃŹ..." : "Đ’Ń–Đ´ĐşŃ€Đ¸Ń‚Đ¸ ŃĐ»ĐľŃ‚"}
+          {isSubmitting ? "Збереження..." : "Відкрити слот"}
         </button>
       </form>
 
       <section className={css.listSection}>
         <div className={css.sectionHead}>
-          <h2 className={css.sectionTitle}>Đ’Ń–Đ´ĐşŃ€Đ¸Ń‚Ń– ŃĐ»ĐľŃ‚Đ¸</h2>
+          <h2 className={css.sectionTitle}>Відкриті слоти</h2>
           <p className={css.sectionHint}>
-            ĐśĐ°ĐąĐ±ŃŃ‚Đ˝Ń– Ń–Đ˝Ń‚ĐµŃ€Đ˛Đ°Đ»Đ¸, ŃŹĐşŃ– Đ˛Đ¶Đµ Đ´ĐľŃŃ‚ŃĐżĐ˝Ń– Đ´Đ»ŃŹ Đ±Ń€ĐľĐ˝ŃŽĐ˛Đ°Đ˝Đ˝ŃŹ.
+            Майбутні інтервали, які вже доступні для бронювання.
           </p>
         </div>
 
@@ -534,37 +517,37 @@ export default function AdminPage() {
               const isDeleteDisabled =
                 deletingId === freeHour._id || Boolean(overlappingLesson);
 
-	              return (
-	                <li key={freeHour._id} className={css.freeHourItem}>
-                <div className={css.freeHourMeta}>
-                  <span className={css.freeHourPrimary}>
-                    {formatDatePart(freeHour.date)} â€˘ {formatTimePart(freeHour.date)}
-                  </span>
-                  <span className={css.freeHourSecondary}>
-                    {locationLabels[freeHour.location]} â€˘ {freeHour.duration} Ń…Đ˛
-                  </span>
-                  {overlappingLesson ? (
-                    <span className={css.freeHourSecondary}>
-                      ĐˇĐżĐľŃ‡Đ°Ń‚ĐşŃ ŃĐşĐ°ŃŃĐąŃ‚Đµ Đ·Đ°Đ±Ń€ĐľĐ˝ŃŚĐľĐ˛Đ°Đ˝Đµ Ń‚Ń€ĐµĐ˝ŃĐ˛Đ°Đ˝Đ˝ŃŹ, Ń‰ĐľĐ± Đ·Đ°ĐşŃ€Đ¸Ń‚Đ¸ Ń†ĐµĐą ŃĐ»ĐľŃ‚.
+              return (
+                <li key={freeHour._id} className={css.freeHourItem}>
+                  <div className={css.freeHourMeta}>
+                    <span className={css.freeHourPrimary}>
+                      {formatDatePart(freeHour.date)} • {formatTimePart(freeHour.date)}
                     </span>
-                  ) : null}
-                </div>
-                <button
-                  type="button"
-                  className={css.deleteButton}
-                  onClick={() => handleDelete(freeHour)}
-	                  disabled={isDeleteDisabled}
-	                  title={
-	                    overlappingLesson
-	                      ? "ĐˇĐżĐľŃ‡Đ°Ń‚ĐşŃ ŃĐşĐ°ŃŃĐąŃ‚Đµ Đ·Đ°Đ±Ń€ĐľĐ˝ŃŚĐľĐ˛Đ°Đ˝Đµ Ń‚Ń€ĐµĐ˝ŃĐ˛Đ°Đ˝Đ˝ŃŹ, Đ° ĐżĐľŃ‚Ń–ĐĽ Đ·Đ°ĐşŃ€Đ¸ĐąŃ‚Đµ ŃĐ»ĐľŃ‚."
-	                      : undefined
-	                  }
-	                >
-                  {deletingId === freeHour._id ? "Đ’Đ¸Đ´Đ°Đ»ĐµĐ˝Đ˝ŃŹ..." : "Đ’Đ¸Đ´Đ°Đ»Đ¸Ń‚Đ¸"}
-                </button>
-	                </li>
-	              );
-	            })}
+                    <span className={css.freeHourSecondary}>
+                      {locationLabels[freeHour.location]} • {freeHour.duration} хв
+                    </span>
+                    {overlappingLesson ? (
+                      <span className={css.freeHourSecondary}>
+                        Спочатку скасуйте заброньоване тренування, щоб закрити цей слот.
+                      </span>
+                    ) : null}
+                  </div>
+                  <button
+                    type="button"
+                    className={css.deleteButton}
+                    onClick={() => handleDelete(freeHour)}
+                    disabled={isDeleteDisabled}
+                    title={
+                      overlappingLesson
+                        ? "Спочатку скасуйте заброньоване тренування, а потім закрийте слот."
+                        : undefined
+                    }
+                  >
+                    {deletingId === freeHour._id ? "Видалення..." : "Видалити"}
+                  </button>
+                </li>
+              );
+            })}
           </ul>
         ) : (
           <p className={css.emptyState}>{listEmptyText}</p>

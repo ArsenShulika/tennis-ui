@@ -133,7 +133,8 @@ export default function CustomDatePicker({
 
   const monthLabel = `${MONTH_LABELS[visibleMonth.getMonth()]} ${visibleMonth.getFullYear()} р.`;
   const calendarDays = useMemo(() => buildCalendarDays(visibleMonth), [visibleMonth]);
-  const canGoToPreviousMonth = startOfMonth(visibleMonth).getTime() > startOfMonth(minDateObject).getTime();
+  const canGoToPreviousMonth =
+    startOfMonth(visibleMonth).getTime() > startOfMonth(minDateObject).getTime();
 
   return (
     <div className={css.root} ref={rootRef}>
