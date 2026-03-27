@@ -15,6 +15,7 @@ interface TelegramWebApp {
     user?: TelegramWebAppUser;
   };
   ready?: () => void;
+  openLink?: (url: string) => void;
 }
 
 interface Window {

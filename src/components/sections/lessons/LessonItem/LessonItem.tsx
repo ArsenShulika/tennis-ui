@@ -103,7 +103,10 @@ export default function LessonItem({
       </div>
 
       <div className={css.lessonInfo}>
-        <h3 className={css.hall}>{hallLabel}</h3>
+        <div className={css.hallRow}>
+          <h3 className={css.hall}>{hallLabel}</h3>
+          {lesson.multisport ? <span className={css.discountBadge}>M</span> : null}
+        </div>
         <div className={css.lessonMeta}>
           <span className={css.typeText}>{typeLabel}</span>
           {adminUser ? (

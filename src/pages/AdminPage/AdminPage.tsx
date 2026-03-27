@@ -395,6 +395,14 @@ export default function AdminPage() {
 
   const handleDelete = async (freeHour: FreeHour) => {
     const overlappingLesson = findOverlappingLesson(freeHour, futureLessons);
+    if (Boolean(overlappingLesson)) {
+      setListError(
+        `Неможливо закрити слот на ${formatDatePart(freeHour.date)} о ${formatTimePart(
+          freeHour.date
+        )}, бо на цей час уже є заброньоване тренування. Спочатку скасуйте бронювання.`
+      );
+      return;
+    }
     const confirmed = overlappingLesson
       ? window.confirm(
           `На ${formatDatePart(overlappingLesson.date)} о ${formatTimePart(
@@ -521,8 +529,13 @@ export default function AdminPage() {
 
         {freeHours.length > 0 ? (
           <ul className={css.freeHourList}>
-            {freeHours.map((freeHour) => (
-              <li key={freeHour._id} className={css.freeHourItem}>
+            {freeHours.map((freeHour) => {
+              const overlappingLesson = findOverlappingLesson(freeHour, futureLessons);
+              const isDeleteDisabled =
+                deletingId === freeHour._id || Boolean(overlappingLesson);
+
+	              return (
+	                <li key={freeHour._id} className={css.freeHourItem}>
                 <div className={css.freeHourMeta}>
                   <span className={css.freeHourPrimary}>
                     {formatDatePart(freeHour.date)} • {formatTimePart(freeHour.date)}
@@ -530,17 +543,28 @@ export default function AdminPage() {
                   <span className={css.freeHourSecondary}>
                     {locationLabels[freeHour.location]} • {freeHour.duration} хв
                   </span>
+                  {overlappingLesson ? (
+                    <span className={css.freeHourSecondary}>
+                      Спочатку скасуйте заброньоване тренування, щоб закрити цей слот.
+                    </span>
+                  ) : null}
                 </div>
                 <button
                   type="button"
                   className={css.deleteButton}
                   onClick={() => handleDelete(freeHour)}
-                  disabled={deletingId === freeHour._id}
-                >
+	                  disabled={isDeleteDisabled}
+	                  title={
+	                    overlappingLesson
+	                      ? "Спочатку скасуйте заброньоване тренування, а потім закрийте слот."
+	                      : undefined
+	                  }
+	                >
                   {deletingId === freeHour._id ? "Видалення..." : "Видалити"}
                 </button>
-              </li>
-            ))}
+	                </li>
+	              );
+	            })}
           </ul>
         ) : (
           <p className={css.emptyState}>{listEmptyText}</p>

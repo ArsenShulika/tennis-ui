@@ -463,7 +463,7 @@ export default function BookingForm() {
       </div>
 
       <div className={css.checkboxRow}>
-        <label htmlFor="multisport">Картка MultiSport</label>
+        <label htmlFor="multisport">Знижка для власників карт MultiSport та Medicover</label>
         <input
           type="checkbox"
           name="multisport"

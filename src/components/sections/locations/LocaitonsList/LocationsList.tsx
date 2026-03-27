@@ -1,3 +1,4 @@
+import type { MouseEvent } from "react";
 import css from "./LocationsList.module.css";
 
 type Location = {
@@ -35,7 +36,28 @@ const data: Location[] = [
   },
 ];
 
+const isPlainLeftClick = (event: MouseEvent<HTMLAnchorElement>) =>
+  event.button === 0 &&
+  !event.metaKey &&
+  !event.ctrlKey &&
+  !event.shiftKey &&
+  !event.altKey;
+
 const LocationsList = () => {
+  const handleCardClick = (
+    event: MouseEvent<HTMLAnchorElement>,
+    mapUrl: string
+  ) => {
+    const telegramWebApp = window.Telegram?.WebApp;
+
+    if (!telegramWebApp?.openLink || !isPlainLeftClick(event)) {
+      return;
+    }
+
+    event.preventDefault();
+    telegramWebApp.openLink(mapUrl);
+  };
+
   return (
     <ul className={css.locationList}>
       {data.map((loc) => {
@@ -50,6 +72,7 @@ const LocationsList = () => {
               target="_blank"
               rel="noopener noreferrer"
               className={css.card}
+              onClick={(event) => handleCardClick(event, mapUrl)}
               aria-label={`Відкрити в Google Maps: ${loc.name}`}
             >
               <div className={css.image}>

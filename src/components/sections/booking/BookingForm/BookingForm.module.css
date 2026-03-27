@@ -9,7 +9,7 @@
   --focus-ring: rgba(37, 99, 235, 0.18);
   --btn: #2563eb;
   --btn-hover: #1d4ed8;
-  --field-h: 46px;
+  --field-h: 44px;
   --field-radius: 10px;
   --field-px: 12px;
 
@@ -173,6 +173,15 @@
   min-height: var(--field-h);
   display: flex;
   align-items: stretch;
+  --nice-select-height: var(--field-h);
+  --nice-select-radius: var(--field-radius);
+  --nice-select-padding-x: var(--field-px);
+  --nice-select-border: var(--border-strong);
+  --nice-select-hover-border: #9ca3af;
+  --nice-select-focus: var(--focus);
+  --nice-select-focus-ring: var(--focus-ring);
+  --nice-select-placeholder: var(--muted);
+  --nice-select-arrow: #9ca3af;
 }
 
 .selectField > input,
@@ -238,6 +247,10 @@
 
   .bookingForm button[type="submit"] {
     height: 44px;
+  }
+
+  .bookingForm {
+    --field-h: 42px;
   }
 
   .checkboxRow {

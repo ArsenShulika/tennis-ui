@@ -1,4 +1,14 @@
 .wrapper {
+  --nice-select-height: 44px;
+  --nice-select-radius: 10px;
+  --nice-select-padding-x: 12px;
+  --nice-select-border: #d1d5db;
+  --nice-select-hover-border: #9ca3af;
+  --nice-select-focus: #2563eb;
+  --nice-select-focus-ring: rgba(37, 99, 235, 0.18);
+  --nice-select-placeholder: #6b7280;
+  --nice-select-arrow: #9ca3af;
+
   width: 100%;
   min-width: 0;
 }
@@ -8,11 +18,11 @@
 }
 
 .select :global(.ant-select-selector) {
-  height: 46px !important;
-  min-height: 46px !important;
-  padding: 0 12px !important;
-  border: 1px solid #d1d5db !important;
-  border-radius: 10px !important;
+  height: var(--nice-select-height) !important;
+  min-height: var(--nice-select-height) !important;
+  padding: 0 var(--nice-select-padding-x) !important;
+  border: 1px solid var(--nice-select-border) !important;
+  border-radius: var(--nice-select-radius) !important;
   box-shadow: none !important;
   box-sizing: border-box !important;
   transition: border-color 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
@@ -28,25 +38,25 @@
 .select :global(.ant-select-selection-placeholder) {
   display: flex;
   align-items: center;
-  min-height: 44px;
+  min-height: calc(var(--nice-select-height) - 2px);
 }
 
 .select :global(.ant-select-selector:hover) {
-  border-color: #9ca3af !important;
+  border-color: var(--nice-select-hover-border) !important;
 }
 
 .select :global(.ant-select-focused .ant-select-selector),
 .select :global(.ant-select-selector:focus-within) {
-  border-color: #2563eb !important;
-  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.18) !important;
+  border-color: var(--nice-select-focus) !important;
+  box-shadow: 0 0 0 3px var(--nice-select-focus-ring) !important;
 }
 
 .select :global(.ant-select-selection-placeholder) {
-  color: #6b7280;
+  color: var(--nice-select-placeholder);
 }
 
 .select :global(.ant-select-arrow) {
-  color: #9ca3af;
+  color: var(--nice-select-arrow);
 }
 
 .dropdown {
@@ -77,13 +87,17 @@
 }
 
 @media (max-width: 640px) {
+  .wrapper {
+    --nice-select-height: 42px;
+  }
+
   .select :global(.ant-select-selector) {
-    height: 44px !important;
+    height: var(--nice-select-height) !important;
   }
 
   .select :global(.ant-select-selection-search),
   .select :global(.ant-select-selection-item),
   .select :global(.ant-select-selection-placeholder) {
-    min-height: 42px;
+    min-height: calc(var(--nice-select-height) - 2px);
   }
 }
