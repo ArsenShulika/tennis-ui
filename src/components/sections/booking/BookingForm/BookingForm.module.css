@@ -196,8 +196,7 @@
 }
 
 .hint,
-.hintError,
-.hintSuccess {
+.hintError {
   margin: -4px 0 0;
   font-size: 0.9rem;
 }
@@ -210,8 +209,14 @@
   color: #b91c1c;
 }
 
-.hintSuccess {
+.success {
+  margin: 0;
+  padding: 12px 14px;
+  border-radius: 12px;
+  font-size: 0.95rem;
+  background-color: #ecfdf3;
   color: #166534;
+  border: 1px solid #bbf7d0;
 }
 
 .checkboxRow {

@@ -19,6 +19,7 @@ const TYPE_LABELS: Record<Lesson["typeOfLesson"], string> = {
 };
 
 const DURATION_LABELS: Record<Lesson["duration"], string> = {
+  m30: "30 хв",
   m60: "60 хв",
   m90: "90 хв",
   m120: "120 хв",

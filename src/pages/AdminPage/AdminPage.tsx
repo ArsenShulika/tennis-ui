@@ -232,6 +232,13 @@ export default function AdminPage() {
     () => getMaxAvailableMinutes(time, blockedTimeValues),
     [blockedTimeValues, time]
   );
+  const durationValue = Number(duration);
+  const isDurationStepValid =
+    duration.trim() !== "" && Number.isFinite(durationValue) && durationValue % 30 === 0;
+  const durationStepHint =
+    duration.trim() !== "" && !isDurationStepValid
+      ? "Тривалість має бути кратною 30 хв. Наприклад: 30, 60, 90."
+      : "";
 
   const loadAdminData = async () => {
     try {
@@ -356,6 +363,12 @@ export default function AdminPage() {
 
     if (Number(duration) < MIN_LESSON_MINUTES) {
       setError(`Мінімальна тривалість тренування становить ${MIN_LESSON_MINUTES} хв.`);
+      setMessage("");
+      return;
+    }
+
+    if (!isDurationStepValid) {
+      setError("Тривалість має бути кратною 30 хв.");
       setMessage("");
       return;
     }
@@ -501,9 +514,12 @@ export default function AdminPage() {
             value={duration}
             onChange={(event) => setDuration(event.target.value)}
             className={css.input}
+            inputMode="numeric"
+            aria-invalid={Boolean(durationStepHint)}
             required
           />
         </div>
+        {durationStepHint ? <p className={css.fieldHintError}>{durationStepHint}</p> : null}
 
         {time && maxDurationMinutes > 0 ? (
           <p className={css.sectionHint}>

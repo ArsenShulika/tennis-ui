@@ -37,6 +37,7 @@ const DURATION_OPTIONS: Array<{
   label: string;
   minutes: number;
 }> = [
+  { value: "m30", label: "30 хв", minutes: 30 },
   { value: "m60", label: "60 хв", minutes: 60 },
   { value: "m90", label: "90 хв", minutes: 90 },
   { value: "m120", label: "120 хв", minutes: 120 },
@@ -381,7 +382,7 @@ export default function BookingForm() {
 
     try {
       await createLesson(lesson);
-      setSubmitMessage("Бронювання створено.");
+      setSubmitMessage("Бронювання успішно створено.");
       setSelectedSlotValue("");
       setMultisport(false);
       setTypeOfLesson("individual");
@@ -483,7 +484,7 @@ export default function BookingForm() {
         </p>
       ) : null}
       {submitError ? <p className={css.hintError}>{submitError}</p> : null}
-      {submitMessage ? <p className={css.hintSuccess}>{submitMessage}</p> : null}
+      {submitMessage ? <p className={css.success}>{submitMessage}</p> : null}
 
       <button type="submit" disabled={!selectedSlot || isLoading}>
         Підтвердити бронювання
