@@ -1,7 +1,10 @@
+import { useLanguage } from "../../hooks/useLanguage";
 import css from "./SettingsPage.module.css";
 
 const SettingsPage = () => {
-  return <div className={css["settingsPage"]}>SettingsPage</div>;
+  const { t } = useLanguage();
+
+  return <div className={css.settingsPage}>{t("pages.settings")}</div>;
 };
 
 export default SettingsPage;

@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
+import { useLanguage } from "../../../hooks/useLanguage";
 import css from "./CustomDropdownSelect.module.css";
 
 type Option = {
@@ -23,9 +24,10 @@ export default function CustomDropdownSelect({
   onChange,
   options,
   placeholder,
-  emptyText = "Немає доступних варіантів",
+  emptyText,
   disabled = false,
 }: Props) {
+  const { t } = useLanguage();
   const rootRef = useRef<HTMLDivElement | null>(null);
   const [isOpen, setIsOpen] = useState(false);
 
@@ -59,6 +61,7 @@ export default function CustomDropdownSelect({
   }, [isOpen]);
 
   const hasEnabledOptions = options.some((option) => !option.disabled);
+  const resolvedEmptyText = emptyText ?? t("common.noOptions");
 
   return (
     <div className={css.root} ref={rootRef}>
@@ -106,7 +109,7 @@ export default function CustomDropdownSelect({
               ))}
             </div>
           ) : (
-            <div className={css.emptyState}>{emptyText}</div>
+            <div className={css.emptyState}>{resolvedEmptyText}</div>
           )}
         </div>
       ) : null}

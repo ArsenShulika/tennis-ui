@@ -1,10 +1,11 @@
-import css from './Footer.module.css';
+import { useLanguage } from "../../../hooks/useLanguage";
+import css from "./Footer.module.css";
 
 const Footer = () => {
+  const { t } = useLanguage();
+
   return (
-    <div className={css['footer']}>
-      Footer
-    </div>
+    <div className={css.footer}>{t("footer.label")}</div>
   );
 };
 

@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
+import { useLanguage } from "../../../hooks/useLanguage";
 import css from "./CustomDatePicker.module.css";
 
 type Props = {
@@ -9,22 +10,6 @@ type Props = {
   label: string;
   placeholder?: string;
 };
-
-const WEEKDAY_LABELS = ["Пн", "Вт", "Ср", "Чт", "Пт", "Сб", "Нд"];
-const MONTH_LABELS = [
-  "січень",
-  "лютий",
-  "березень",
-  "квітень",
-  "травень",
-  "червень",
-  "липень",
-  "серпень",
-  "вересень",
-  "жовтень",
-  "листопад",
-  "грудень",
-];
 
 function parseDateValue(value: string) {
   const match = value.match(/^(\d{4})-(\d{2})-(\d{2})$/);
@@ -41,11 +26,11 @@ function formatDateValue(date: Date) {
   return `${year}-${month}-${day}`;
 }
 
-function formatDisplayDate(value: string) {
+function formatDisplayDate(value: string, locale: string) {
   const date = parseDateValue(value);
   if (!date) return value;
 
-  return new Intl.DateTimeFormat("uk-UA", {
+  return new Intl.DateTimeFormat(locale, {
     day: "numeric",
     month: "long",
     year: "numeric",
@@ -89,8 +74,9 @@ export default function CustomDatePicker({
   onChange,
   minDate,
   label,
-  placeholder = "Оберіть дату",
+  placeholder,
 }: Props) {
+  const { locale, language, t } = useLanguage();
   const rootRef = useRef<HTMLDivElement | null>(null);
   const [isOpen, setIsOpen] = useState(false);
   const today = useMemo(() => {
@@ -131,7 +117,50 @@ export default function CustomDatePicker({
     };
   }, [isOpen]);
 
-  const monthLabel = `${MONTH_LABELS[visibleMonth.getMonth()]} ${visibleMonth.getFullYear()} р.`;
+  const weekdayLabels = useMemo(
+    () =>
+      language === "uk"
+        ? ["Пн", "Вт", "Ср", "Чт", "Пт", "Сб", "Нд"]
+        : ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"],
+    [language]
+  );
+  const monthLabels = useMemo(
+    () =>
+      language === "uk"
+        ? [
+            "січень",
+            "лютий",
+            "березень",
+            "квітень",
+            "травень",
+            "червень",
+            "липень",
+            "серпень",
+            "вересень",
+            "жовтень",
+            "листопад",
+            "грудень",
+          ]
+        : [
+            "January",
+            "February",
+            "March",
+            "April",
+            "May",
+            "June",
+            "July",
+            "August",
+            "September",
+            "October",
+            "November",
+            "December",
+          ],
+    [language]
+  );
+  const resolvedPlaceholder = placeholder ?? t("datePicker.placeholder");
+  const monthLabel = `${monthLabels[visibleMonth.getMonth()]} ${visibleMonth.getFullYear()}${
+    language === "uk" ? ` ${t("datePicker.yearShort")}` : ""
+  }`;
   const calendarDays = useMemo(() => buildCalendarDays(visibleMonth), [visibleMonth]);
   const canGoToPreviousMonth =
     startOfMonth(visibleMonth).getTime() > startOfMonth(minDateObject).getTime();
@@ -146,7 +175,9 @@ export default function CustomDatePicker({
         aria-haspopup="dialog"
         aria-expanded={isOpen}
       >
-        <span className={css.triggerLabel}>{value ? formatDisplayDate(value) : placeholder}</span>
+        <span className={css.triggerLabel}>
+          {value ? formatDisplayDate(value, locale) : resolvedPlaceholder}
+        </span>
       </button>
 
       {isOpen ? (
@@ -161,7 +192,7 @@ export default function CustomDatePicker({
                 )
               }
               disabled={!canGoToPreviousMonth}
-              aria-label="Попередній місяць"
+              aria-label={t("datePicker.previousMonth")}
             >
               ←
             </button>
@@ -174,14 +205,14 @@ export default function CustomDatePicker({
                   (current) => new Date(current.getFullYear(), current.getMonth() + 1, 1)
                 )
               }
-              aria-label="Наступний місяць"
+              aria-label={t("datePicker.nextMonth")}
             >
               →
             </button>
           </div>
 
           <div className={css.weekdays}>
-            {WEEKDAY_LABELS.map((weekday) => (
+            {weekdayLabels.map((weekday) => (
               <span key={weekday} className={css.weekday}>
                 {weekday}
               </span>

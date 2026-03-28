@@ -1,6 +1,7 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { GetFreeHours } from "../../../../api/freeHours";
+import { useLanguage } from "../../../../hooks/useLanguage";
 import { GetAllLessons } from "../../../../api/lessonsapi";
 import { FreeHour } from "../../../../types/freeHour";
 import { Lesson, LessonLocation } from "../../../../types/lesson";
@@ -61,6 +62,14 @@ function getCurrentWeek(): Date[] {
     const d = new Date(monday);
     d.setDate(monday.getDate() + i);
     return d;
+  });
+}
+
+function getWeekByOffset(weekOffset: number): Date[] {
+  return getCurrentWeek().map((day) => {
+    const nextDay = new Date(day);
+    nextDay.setDate(day.getDate() + weekOffset * 7);
+    return nextDay;
   });
 }
 
@@ -228,17 +237,41 @@ function isToday(d: Date) {
   );
 }
 
+function isWeekend(d: Date) {
+  const day = d.getDay();
+  return day === 0 || day === 6;
+}
+
 function isPastSlot(dateKey: string, time: string) {
   return createSlotDate(dateKey, time).getTime() < Date.now();
 }
 
-const dayFmt = new Intl.DateTimeFormat("uk-UA", { weekday: "short" });
-
 export default function Schedule({ mode = "user", onAdminSlotSelect }: ScheduleProps) {
   const navigate = useNavigate();
-  const [week] = useState<Date[]>(() => getCurrentWeek());
+  const { locale, t } = useLanguage();
+  const [weekOffset, setWeekOffset] = useState(0);
+  const week = useMemo(() => getWeekByOffset(weekOffset), [weekOffset]);
   const [grid, setGrid] = useState<ScheduleGrid>(() => createBlockedWeekGrid(week));
   const [isLoading, setIsLoading] = useState(true);
+  const dayFmt = useMemo(() => new Intl.DateTimeFormat(locale, { weekday: "short" }), [locale]);
+  const weekRangeFmt = useMemo(
+    () =>
+      new Intl.DateTimeFormat(locale, {
+        day: "numeric",
+        month: "long",
+      }),
+    [locale]
+  );
+  const weekRangeLabel = useMemo(() => {
+    const firstDay = week[0];
+    const lastDay = week[week.length - 1];
+
+    if (firstDay.getMonth() === lastDay.getMonth()) {
+      return `${firstDay.getDate()} - ${weekRangeFmt.format(lastDay)}`;
+    }
+
+    return `${weekRangeFmt.format(firstDay)} - ${weekRangeFmt.format(lastDay)}`;
+  }, [week, weekRangeFmt]);
 
   useEffect(() => {
     const loadSchedule = async () => {
@@ -287,16 +320,43 @@ export default function Schedule({ mode = "user", onAdminSlotSelect }: ScheduleP
 
   return (
     <section className={css.schedule}>
-      <div className={css.legend}>
-        <span className={css.legendItem}>
-          <span className={`${css.legendSwatch} ${css.legendAvail}`} /> Вільно
-        </span>
-        <span className={css.legendItem}>
-          <span className={`${css.legendSwatch} ${css.legendBooked}`} /> Заброньовано
-        </span>
-        <span className={css.legendItem}>
-          <span className={`${css.legendSwatch} ${css.legendBusy}`} /> Недоступно
-        </span>
+      <div className={css.topBar}>
+        <div className={css.weekControls}>
+          <button
+            type="button"
+            className={css.weekButton}
+            onClick={() => setWeekOffset((current) => current - 1)}
+            aria-label={t("schedule.previousWeek")}
+          >
+            {t("common.previous")}
+          </button>
+
+          <div className={css.weekLabelBlock}>
+            <span className={css.weekCaption}>{t("common.period")}</span>
+            <strong className={css.weekLabel}>{weekRangeLabel}</strong>
+          </div>
+
+          <button
+            type="button"
+            className={css.weekButton}
+            onClick={() => setWeekOffset((current) => current + 1)}
+            aria-label={t("schedule.nextWeek")}
+          >
+            {t("common.next")}
+          </button>
+        </div>
+
+        <div className={css.legend}>
+          <span className={css.legendItem}>
+            <span className={`${css.legendSwatch} ${css.legendAvail}`} /> {t("schedule.available")}
+          </span>
+          <span className={css.legendItem}>
+            <span className={`${css.legendSwatch} ${css.legendBooked}`} /> {t("schedule.booked")}
+          </span>
+          <span className={css.legendItem}>
+            <span className={`${css.legendSwatch} ${css.legendBusy}`} /> {t("schedule.unavailable")}
+          </span>
+        </div>
       </div>
 
       <div className={css.scrollArea}>
@@ -304,16 +364,18 @@ export default function Schedule({ mode = "user", onAdminSlotSelect }: ScheduleP
           {isLoading ? (
             <div className={css.loaderOverlay} aria-live="polite" aria-busy="true">
               <div className={css.loaderSpinner} aria-hidden />
-              <p className={css.loaderText}>Завантажуємо вільні та зайняті години...</p>
+              <p className={css.loaderText}>{t("schedule.loading")}</p>
             </div>
           ) : null}
 
           <div className={css.headerRow}>
-            <div className={css.timeHead}>Час</div>
+            <div className={css.timeHead}>{t("common.time")}</div>
             {week.map((d) => (
               <div
                 key={formatDate(d)}
-                className={`${css.dayHead} ${isToday(d) ? css.today : ""}`}
+                className={`${css.dayHead} ${isToday(d) ? css.today : ""} ${
+                  isWeekend(d) ? css.weekendHead : ""
+                }`}
               >
                 <div className={css.dayName}>{dayFmt.format(d)}</div>
                 <div className={css.dayDate}>{d.getDate()}</div>
@@ -323,60 +385,61 @@ export default function Schedule({ mode = "user", onAdminSlotSelect }: ScheduleP
 
           <div className={css.gridInner}>
             <div className={css.timeCol}>
-              {timeSlots.map((t) => (
-                <div key={t} className={css.timeCell} aria-hidden>
-                  {t}
+              {timeSlots.map((tValue) => (
+                <div key={tValue} className={css.timeCell} aria-hidden>
+                  {tValue}
                 </div>
               ))}
             </div>
 
             {week.map((d) => {
               const key = formatDate(d);
-              const colClass = `${css.dayCol} ${isToday(d) ? css.today : ""}`;
+              const colClass = `${css.dayCol} ${isToday(d) ? css.today : ""} ${
+                isWeekend(d) ? css.weekendCol : ""
+              }`;
 
               return (
                 <div key={key} className={colClass}>
-                  {timeSlots.map((t) => {
-                    const cell = grid[key]?.[t] ?? { status: "busy" as const };
-                    const isPast = isPastSlot(key, t);
+                  {timeSlots.map((tValue) => {
+                    const cell = grid[key]?.[tValue] ?? { status: "busy" as const };
+                    const isPast = isPastSlot(key, tValue);
                     const isBookableFreeSlot =
                       !isPast &&
                       cell.status === "free" &&
-                      hasBookableDuration(grid, key, t, cell.location);
+                      hasBookableDuration(grid, key, tValue, cell.location);
                     const isAdminOpenableBusySlot =
                       mode === "admin" && !isPast && cell.status === "busy";
                     const isClickable = isBookableFreeSlot || isAdminOpenableBusySlot;
                     const cls = `${css.slot} ${css[cell.status]} ${
                       isClickable ? css.clickable : ""
-                    }`;
+                    } ${isPast ? css.pastSlot : ""}`;
                     const locationLabel = cell.location
                       ? LOCATION_LABELS[cell.location]
-                      : "Локація не визначена";
+                      : t("schedule.locationUndefined");
                     const statusLabel =
                       cell.status === "booked"
-                        ? "Заброньовано"
+                        ? t("schedule.booked")
                         : cell.status === "free"
-                          ? "Вільно"
-                          : "Недоступно";
+                          ? t("schedule.available")
+                          : t("schedule.unavailable");
+                    const label = `${key} ${tValue} • ${statusLabel}${
+                      cell.location ? ` • ${locationLabel}` : ""
+                    }`;
 
                     return (
                       <button
-                        key={`${key}-${t}`}
+                        key={`${key}-${tValue}`}
                         type="button"
                         className={cls}
-                        title={`${key} ${t} • ${statusLabel}${
-                          cell.location ? ` • ${locationLabel}` : ""
-                        }`}
-                        aria-label={`${key} ${t} • ${statusLabel}${
-                          cell.location ? ` • ${locationLabel}` : ""
-                        }`}
+                        title={label}
+                        aria-label={label}
                         onClick={() => {
                           if (isBookableFreeSlot) {
-                            handleFreeSlotSelect(key, t, cell.location);
+                            handleFreeSlotSelect(key, tValue, cell.location);
                           }
 
                           if (isAdminOpenableBusySlot) {
-                            onAdminSlotSelect?.({ date: key, time: t });
+                            onAdminSlotSelect?.({ date: key, time: tValue });
                           }
                         }}
                         disabled={!isClickable}

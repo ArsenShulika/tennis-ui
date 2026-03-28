@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { deleteLesson, GetAllLessons } from "../../../../api/lessonsapi";
 import { getUserByTelegramId } from "../../../../api/usersapi";
+import { useLanguage } from "../../../../hooks/useLanguage";
 import { useTelegramUser } from "../../../../hooks/useTelegramUser";
 import { Lesson } from "../../../../types/lesson";
 import { User } from "../../../../types/user";
@@ -11,18 +12,6 @@ const LOCATION_LABELS: Record<Lesson["location"], string> = {
   awf: "Hala tenisowa AWF",
   gem: "Hala wielofunkcyjna GEM",
   oko: "Korty Morskie Oko",
-};
-
-const TYPE_LABELS: Record<Lesson["typeOfLesson"], string> = {
-  individual: "Індивідуальне",
-  split: "Спліт",
-};
-
-const DURATION_LABELS: Record<Lesson["duration"], string> = {
-  m30: "30 хв",
-  m60: "60 хв",
-  m90: "90 хв",
-  m120: "120 хв",
 };
 
 function parseLocalDateTime(value: string) {
@@ -56,12 +45,30 @@ function parseLessonStart(lesson: Lesson) {
 }
 
 export default function LessonsList() {
+  const { t } = useLanguage();
   const { telegramUserId, isAdmin } = useTelegramUser();
   const [lessons, setLessons] = useState<Lesson[]>([]);
   const [usersByTelegramId, setUsersByTelegramId] = useState<Record<string, User | null>>({});
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState("");
   const [deletingLessonId, setDeletingLessonId] = useState("");
+
+  const typeLabels = useMemo(
+    () => ({
+      individual: t("lessons.types.individual"),
+      split: t("lessons.types.split"),
+    }),
+    [t]
+  );
+  const durationLabels = useMemo(
+    () => ({
+      m30: `30 ${t("common.minutesShort")}`,
+      m60: `60 ${t("common.minutesShort")}`,
+      m90: `90 ${t("common.minutesShort")}`,
+      m120: `120 ${t("common.minutesShort")}`,
+    }),
+    [t]
+  );
 
   useEffect(() => {
     if (!telegramUserId && !isAdmin) {
@@ -113,32 +120,26 @@ export default function LessonsList() {
         setUsersByTelegramId(Object.fromEntries(userEntries));
       } catch (loadError) {
         console.error("Failed to load lessons:", loadError);
-        setError(
-          isAdmin
-            ? "Не вдалося завантажити список уроків."
-            : "Не вдалося завантажити ваші заброньовані уроки."
-        );
+        setError(isAdmin ? t("lessons.loadErrorAdmin") : t("lessons.loadErrorUser"));
       } finally {
         setIsLoading(false);
       }
     };
 
     loadLessons();
-  }, [telegramUserId, isAdmin]);
+  }, [telegramUserId, isAdmin, t]);
 
   const hasItems = lessons.length > 0;
 
   const emptyStateText = useMemo(() => {
-    if (!telegramUserId && !isAdmin) return "Немає даних Telegram-користувача.";
-    if (isLoading) return "Завантаження бронювань...";
+    if (!telegramUserId && !isAdmin) return t("lessons.noTelegramUser");
+    if (isLoading) return t("lessons.loading");
     if (error) return error;
-    return isAdmin
-      ? "Наразі немає запланованих тренувань"
-      : "Наразі у вас немає запланованих тренувань";
-  }, [error, isLoading, telegramUserId, isAdmin]);
+    return isAdmin ? t("lessons.emptyAdmin") : t("lessons.emptyUser");
+  }, [error, isLoading, telegramUserId, isAdmin, t]);
 
   const handleDelete = async (lesson: Lesson) => {
-    const confirmed = window.confirm("Видалити це бронювання?");
+    const confirmed = window.confirm(t("lessons.deleteConfirm"));
     if (!confirmed) return;
 
     try {
@@ -148,7 +149,7 @@ export default function LessonsList() {
       setLessons((current) => current.filter((item) => item._id !== lesson._id));
     } catch (deleteError) {
       console.error("Failed to delete lesson:", deleteError);
-      setError("Не вдалося видалити бронювання.");
+      setError(t("lessons.deleteError"));
     } finally {
       setDeletingLessonId("");
     }
@@ -157,7 +158,7 @@ export default function LessonsList() {
   return (
     <section>
       <div className={css.header}>
-        <h2 className={css.title}>Майбутні тренування</h2>
+        <h2 className={css.title}>{t("lessons.title")}</h2>
       </div>
 
       {hasItems ? (
@@ -167,10 +168,12 @@ export default function LessonsList() {
               key={lesson._id}
               lesson={lesson}
               hallLabel={LOCATION_LABELS[lesson.location]}
-              typeLabel={TYPE_LABELS[lesson.typeOfLesson]}
-              durationLabel={DURATION_LABELS[lesson.duration]}
+              typeLabel={typeLabels[lesson.typeOfLesson]}
+              durationLabel={durationLabels[lesson.duration]}
               bookedByLabel={
-                isAdmin ? usersByTelegramId[lesson.telegramUserId]?.fullName ?? lesson.telegramUserId : null
+                isAdmin
+                  ? usersByTelegramId[lesson.telegramUserId]?.fullName ?? lesson.telegramUserId
+                  : null
               }
               adminUser={isAdmin ? usersByTelegramId[lesson.telegramUserId] ?? null : null}
               isDeleting={deletingLessonId === lesson._id}

@@ -4,7 +4,7 @@ import css from "./Header.module.css";
 const Header = () => {
   return (
     <div className={css["header"]}>
-      <div className="container">
+      <div className={`container ${css.inner}`}>
         <Navigation />
       </div>
     </div>

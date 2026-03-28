@@ -1,19 +1,20 @@
 import { NavLink } from "react-router-dom";
+import { useLanguage } from "../../../hooks/useLanguage";
 import { useTelegramUser } from "../../../hooks/useTelegramUser";
 import css from "./Navigation.module.css";
 
-const items = [
-  { to: "/", label: "Home" },
-  { to: "/admin", label: "Admin" },
-  { to: "/booking", label: "Booking" },
-  { to: "/lessons", label: "Lessons" },
-  { to: "/locations", label: "Locations" },
-  { to: "/settings", label: "Settings" },
-  { to: "/payments", label: "Payments" },
-];
-
 const Navigation = () => {
   const { isAdmin } = useTelegramUser();
+  const { t } = useLanguage();
+  const items = [
+    { to: "/", label: t("nav.home") },
+    { to: "/admin", label: t("nav.admin") },
+    { to: "/booking", label: t("nav.booking") },
+    { to: "/lessons", label: t("nav.lessons") },
+    { to: "/locations", label: t("nav.locations") },
+    { to: "/settings", label: t("nav.settings") },
+    { to: "/payments", label: t("nav.payments") },
+  ];
   const visibleItems = items.filter((item) => item.to !== "/admin" || isAdmin);
 
   return (

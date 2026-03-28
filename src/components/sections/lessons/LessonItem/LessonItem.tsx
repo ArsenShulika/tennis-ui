@@ -1,3 +1,4 @@
+import { useLanguage } from "../../../../hooks/useLanguage";
 import { Lesson } from "../../../../types/lesson";
 import { User } from "../../../../types/user";
 import css from "./LessonItem.module.css";
@@ -47,14 +48,6 @@ function parseLessonDate(dateStr: string, time?: string) {
   return parseLocalDateTime(`${dateStr}T00:00:00`);
 }
 
-function formatHeaderDate(date: Date) {
-  const weekday = new Intl.DateTimeFormat("uk-UA", { weekday: "long" }).format(date);
-  const dd = String(date.getDate()).padStart(2, "0");
-  const mm = String(date.getMonth() + 1).padStart(2, "0");
-  const yy = String(date.getFullYear()).slice(-2);
-  return `${weekday[0]?.toUpperCase() ?? ""}${weekday.slice(1)} ${dd}.${mm}.${yy}`;
-}
-
 function formatStartTime(date: Date | null, fallbackTime?: string) {
   if (date) {
     return `${String(date.getHours()).padStart(2, "0")}:${String(date.getMinutes()).padStart(2, "0")}`;
@@ -78,8 +71,16 @@ export default function LessonItem({
   isDeleting = false,
   onCancel,
 }: Props) {
+  const { locale, t } = useLanguage();
   const parsedDate = parseLessonDate(lesson.date, lesson.time);
-  const headerDate = parsedDate ? formatHeaderDate(parsedDate) : lesson.date;
+  const headerDate = parsedDate
+    ? new Intl.DateTimeFormat(locale, {
+        weekday: "long",
+        day: "2-digit",
+        month: "2-digit",
+        year: "2-digit",
+      }).format(parsedDate)
+    : lesson.date;
   const startTime = formatStartTime(parsedDate, lesson.time);
   const userName = adminUser?.userName ? `@${adminUser.userName}` : null;
   const phoneNumber = formatPhoneNumber(adminUser?.phoneNumber);
@@ -122,19 +123,19 @@ export default function LessonItem({
 
       {adminUser ? (
         <div className={css.adminPanel}>
-          <div className={css.adminHeader}>Дані клієнта</div>
+          <div className={css.adminHeader}>{t("lessons.customerData")}</div>
           <div className={css.adminGrid}>
             <div className={css.infoItem}>
-              <span className={css.infoLabel}>Ім'я</span>
-              <span className={css.infoValue}>{fullName ?? "Не вказано"}</span>
+              <span className={css.infoLabel}>{t("lessons.fullName")}</span>
+              <span className={css.infoValue}>{fullName ?? t("common.notSpecified")}</span>
             </div>
             <div className={css.infoItem}>
               <span className={css.infoLabel}>Telegram</span>
-              <span className={css.infoValue}>{userName ?? "Не вказано"}</span>
+              <span className={css.infoValue}>{userName ?? t("common.notSpecified")}</span>
             </div>
             <div className={css.infoItem}>
-              <span className={css.infoLabel}>Телефон</span>
-              <span className={css.infoValue}>{phoneNumber ?? "Не вказано"}</span>
+              <span className={css.infoLabel}>{t("lessons.phone")}</span>
+              <span className={css.infoValue}>{phoneNumber ?? t("common.notSpecified")}</span>
             </div>
             <div className={css.infoItem}>
               <span className={css.infoLabel}>Telegram ID</span>
@@ -149,10 +150,10 @@ export default function LessonItem({
           type="button"
           className={css.cancelBtn}
           onClick={() => onCancel?.(lesson)}
-          aria-label="Скасувати бронювання"
+          aria-label={t("lessons.cancelBooking")}
           disabled={isDeleting}
         >
-          {isDeleting ? "Видалення..." : "Скасувати"}
+          {isDeleting ? t("common.deleting") : t("lessons.cancel")}
         </button>
       </div>
     </li>

@@ -1,4 +1,5 @@
 import type { MouseEvent } from "react";
+import { useLanguage } from "../../../../hooks/useLanguage";
 import css from "./LocationsList.module.css";
 
 type Location = {
@@ -44,10 +45,9 @@ const isPlainLeftClick = (event: MouseEvent<HTMLAnchorElement>) =>
   !event.altKey;
 
 const LocationsList = () => {
-  const handleCardClick = (
-    event: MouseEvent<HTMLAnchorElement>,
-    mapUrl: string
-  ) => {
+  const { t } = useLanguage();
+
+  const handleCardClick = (event: MouseEvent<HTMLAnchorElement>, mapUrl: string) => {
     const telegramWebApp = window.Telegram?.WebApp;
 
     if (!telegramWebApp?.openLink || !isPlainLeftClick(event)) {
@@ -73,7 +73,7 @@ const LocationsList = () => {
               rel="noopener noreferrer"
               className={css.card}
               onClick={(event) => handleCardClick(event, mapUrl)}
-              aria-label={`Відкрити в Google Maps: ${loc.name}`}
+              aria-label={t("locations.openInMaps", { name: loc.name })}
             >
               <div className={css.image}>
                 <img src={loc.image} alt={loc.name} loading="lazy" />

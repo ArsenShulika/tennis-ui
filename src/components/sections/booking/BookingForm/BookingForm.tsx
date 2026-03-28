@@ -2,6 +2,7 @@ import { FormEvent, useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import { GetFreeHours } from "../../../../api/freeHours";
 import { createLesson, GetAllLessons } from "../../../../api/lessonsapi";
+import { useLanguage } from "../../../../hooks/useLanguage";
 import { useTelegramUser } from "../../../../hooks/useTelegramUser";
 import { FreeHour } from "../../../../types/freeHour";
 import {
@@ -32,22 +33,6 @@ const LOCATION_LABELS: Record<LessonLocation, string> = {
   gem: "Hala wielofunkcyjna GEM",
   oko: "Korty Morskie Oko",
 };
-
-const DURATION_OPTIONS: Array<{
-  value: LessonDuration;
-  label: string;
-  minutes: number;
-}> = [
-  { value: "m30", label: "30 хв", minutes: 30 },
-  { value: "m60", label: "60 хв", minutes: 60 },
-  { value: "m90", label: "90 хв", minutes: 90 },
-  { value: "m120", label: "120 хв", minutes: 120 },
-];
-
-const LESSON_TYPE_OPTIONS = [
-  { value: "individual", label: "Індивідуальне заняття" },
-  { value: "split", label: "Спліт заняття (для двох)" },
-];
 
 const TIME_SLOTS = createTimeSlots();
 
@@ -179,7 +164,7 @@ function addLessonToGrid(grid: DayGrid, lesson: Lesson) {
   );
 }
 
-function buildBookingSlots(grid: DayGrid, selectedDate: string) {
+function buildBookingSlots(grid: DayGrid, selectedDate: string, durationOptions: number[]) {
   const result: BookingSlot[] = [];
   const now = new Date();
   const today = formatDate(now);
@@ -198,9 +183,7 @@ function buildBookingSlots(grid: DayGrid, selectedDate: string) {
       }
 
       const availableMinutes = consecutiveSlots * 30;
-      const hasSupportedDuration = DURATION_OPTIONS.some(
-        (option) => option.minutes <= availableMinutes
-      );
+      const hasSupportedDuration = durationOptions.some((option) => option <= availableMinutes);
 
       if (!hasSupportedDuration) return;
 
@@ -221,6 +204,7 @@ function isLessonLocation(value: string | null): value is LessonLocation {
 }
 
 export default function BookingForm() {
+  const { t } = useLanguage();
   const { telegramUserId } = useTelegramUser();
   const [searchParams] = useSearchParams();
   const [date, setDate] = useState("");
@@ -234,6 +218,23 @@ export default function BookingForm() {
   const [submitError, setSubmitError] = useState("");
   const [submitMessage, setSubmitMessage] = useState("");
   const minDate = formatDate(new Date());
+
+  const durationDefinitions = useMemo(
+    () => [
+      { value: "m30" as LessonDuration, label: `30 ${t("common.minutesShort")}`, minutes: 30 },
+      { value: "m60" as LessonDuration, label: `60 ${t("common.minutesShort")}`, minutes: 60 },
+      { value: "m90" as LessonDuration, label: `90 ${t("common.minutesShort")}`, minutes: 90 },
+      { value: "m120" as LessonDuration, label: `120 ${t("common.minutesShort")}`, minutes: 120 },
+    ],
+    [t]
+  );
+  const lessonTypeOptions = useMemo(
+    () => [
+      { value: "individual", label: t("booking.lessonTypes.individual") },
+      { value: "split", label: t("booking.lessonTypes.split") },
+    ],
+    [t]
+  );
 
   const presetDate = searchParams.get("date") ?? "";
   const presetTime = searchParams.get("time") ?? "";
@@ -277,11 +278,10 @@ export default function BookingForm() {
   const durationOptions = useMemo(() => {
     const maxDuration = selectedSlot?.availableMinutes ?? 0;
 
-    return DURATION_OPTIONS.filter((option) => option.minutes <= maxDuration).map((option) => ({
-      value: option.value,
-      label: option.label,
-    }));
-  }, [selectedSlot]);
+    return durationDefinitions
+      .filter((option) => option.minutes <= maxDuration)
+      .map((option) => ({ value: option.value, label: option.label }));
+  }, [durationDefinitions, selectedSlot]);
 
   const durationValueForSelect = durationOptions.some((option) => option.value === duration)
     ? duration
@@ -304,7 +304,7 @@ export default function BookingForm() {
     if (date < minDate) {
       setAvailableSlots([]);
       setSelectedSlotValue("");
-      setLoadError("Не можна резервувати дату в минулому.");
+      setLoadError(t("booking.pastDateError"));
       return;
     }
 
@@ -330,7 +330,11 @@ export default function BookingForm() {
           addLessonToGrid(nextGrid, lesson);
         });
 
-        const nextSlots = buildBookingSlots(nextGrid, date);
+        const nextSlots = buildBookingSlots(
+          nextGrid,
+          date,
+          durationDefinitions.map((option) => option.minutes)
+        );
         setAvailableSlots(nextSlots);
 
         if (presetSlotValue && nextSlots.some((slot) => slot.value === presetSlotValue)) {
@@ -339,31 +343,27 @@ export default function BookingForm() {
       } catch (error) {
         console.error("Failed to load booking availability:", error);
         setAvailableSlots([]);
-        setLoadError("Не вдалося завантажити доступні години.");
+        setLoadError(t("booking.loadError"));
       } finally {
         setIsLoading(false);
       }
     };
 
     loadAvailability();
-  }, [date, minDate, presetSlotValue]);
-
-  const handleDateChange = (nextValue: string) => {
-    setDate(nextValue);
-  };
+  }, [date, durationDefinitions, minDate, presetSlotValue, t]);
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
 
     if (!date || !selectedSlot) {
-      setSubmitError("Оберіть дату та доступний час.");
+      setSubmitError(t("booking.selectDateAndTime"));
       setSubmitMessage("");
       return;
     }
 
     const selectedDateTime = createSlotDate(date, selectedSlot.time);
     if (selectedDateTime.getTime() < Date.now()) {
-      setSubmitError("Не можна резервувати час у минулому.");
+      setSubmitError(t("booking.pastTimeError"));
       setSubmitMessage("");
       return;
     }
@@ -383,85 +383,85 @@ export default function BookingForm() {
 
     try {
       await createLesson(lesson);
-      setSubmitMessage("Бронювання успішно створено.");
+      setSubmitMessage(t("booking.created"));
       setSelectedSlotValue("");
       setMultisport(false);
       setTypeOfLesson("individual");
     } catch (error) {
       console.error("Failed to create lesson:", error);
-      setSubmitError("Не вдалося створити бронювання.");
+      setSubmitError(t("booking.submitError"));
     }
   };
 
   return (
     <form className={css.bookingForm} onSubmit={handleSubmit}>
       <div className={css.headingBlock}>
-        <h1 className={css.title}>Запис на тренування</h1>
+        <h1 className={css.title}>{t("booking.title")}</h1>
       </div>
 
-      <label htmlFor="date">Дата:</label>
+      <label htmlFor="date">{t("booking.dateLabel")}:</label>
       <div className={css.selectField}>
         <CustomDatePicker
           id="date"
           value={date}
-          onChange={handleDateChange}
+          onChange={setDate}
           minDate={minDate}
-          label="Дата"
+          label={t("booking.dateLabel")}
         />
       </div>
 
-      <label htmlFor="time">Час:</label>
+      <label htmlFor="time">{t("booking.timeLabel")}:</label>
       <div className={css.selectField}>
         <CustomDropdownSelect
           id="time"
           value={selectedSlotValue}
-          placeholder={isLoading ? "Завантаження..." : "Оберіть час"}
+          placeholder={isLoading ? t("common.loading") : t("booking.chooseTime")}
           options={timeOptions}
           onChange={setSelectedSlotValue}
-          emptyText="Немає доступних годин на цю дату"
+          emptyText={t("booking.noSlotsForDate")}
           disabled={isLoading}
         />
       </div>
 
-      <label htmlFor="location">Локація:</label>
+      <label htmlFor="location">{t("booking.locationLabel")}:</label>
       <div className={css.selectField}>
         <CustomDropdownSelect
           id="location"
           value={selectedSlot?.location ?? ""}
-          placeholder="Локація визначається автоматично"
+          placeholder={t("booking.autoLocation")}
           options={locationOptions}
           onChange={() => {}}
-          emptyText="Оберіть час, щоб побачити локацію"
+          emptyText={t("booking.chooseTimeForLocation")}
           disabled
         />
       </div>
 
-      <label htmlFor="duration">Тривалість:</label>
+      <label htmlFor="duration">{t("booking.durationLabel")}:</label>
       <div className={css.selectField}>
         <CustomDropdownSelect
           id="duration"
           value={durationValueForSelect}
-          placeholder="Виберіть тривалість заняття"
+          placeholder={t("booking.chooseDuration")}
           options={durationOptions}
           onChange={(value) => setDuration(value as LessonDuration)}
-          emptyText="Немає доступної тривалості"
+          emptyText={t("booking.noDuration")}
         />
       </div>
 
-      <label htmlFor="typeOfLesson">Тип заняття:</label>
+      <label htmlFor="typeOfLesson">{t("booking.lessonTypeLabel")}:</label>
       <div className={css.selectField}>
         <CustomDropdownSelect
           id="typeOfLesson"
           value={typeOfLesson}
-          placeholder="Оберіть тип заняття"
-          options={LESSON_TYPE_OPTIONS}
+          placeholder={t("booking.chooseLessonType")}
+          options={lessonTypeOptions}
           onChange={(value) => setTypeOfLesson(value as LessonType)}
-          emptyText="Немає доступних типів занять"
+          emptyText={t("booking.noLessonTypes")}
         />
       </div>
 
       <div className={css.checkboxRow}>
-        <label htmlFor="multisport">Знижка для власників карт MultiSport та Medicover</label>
+        <label htmlFor="multisport">{t("booking.multisportLabel")}</label>
         <input
           type="checkbox"
           name="multisport"
@@ -473,18 +473,18 @@ export default function BookingForm() {
 
       {loadError ? <p className={css.hintError}>{loadError}</p> : null}
       {!loadError && date && !isLoading && timeOptions.length === 0 ? (
-        <p className={css.hint}>На цю дату немає доступних слотів.</p>
+        <p className={css.hint}>{t("booking.noSlots")}</p>
       ) : null}
       {selectedSlot ? (
         <p className={css.hint}>
-          Доступно до {selectedSlot.availableMinutes} хв у вибраному слоті.
+          {t("booking.availableUpTo", { minutes: selectedSlot.availableMinutes })}
         </p>
       ) : null}
       {submitError ? <p className={css.hintError}>{submitError}</p> : null}
       {submitMessage ? <p className={css.success}>{submitMessage}</p> : null}
 
       <button type="submit" disabled={!selectedSlot || isLoading}>
-        Підтвердити бронювання
+        {t("booking.submit")}
       </button>
     </form>
   );
