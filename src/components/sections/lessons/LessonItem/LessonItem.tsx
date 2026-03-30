@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+
 import { useLanguage } from "../../../../hooks/useLanguage";
 import { Lesson } from "../../../../types/lesson";
 import { User } from "../../../../types/user";
@@ -59,17 +59,13 @@ function formatStartTime(date: Date | null, fallbackTime?: string) {
   return fallbackTime || "--:--";
 }
 
-function formatPhoneNumber(phoneNumber?: number) {
-  if (!phoneNumber) return null;
-  return `+${phoneNumber}`;
-}
+
 
 export default function LessonItem({
   lesson,
   hallLabel,
   typeLabel,
   durationLabel,
-  bookedByLabel = null,
   adminUser = null,
   isDeleting = false,
   onCancel,
@@ -86,9 +82,7 @@ export default function LessonItem({
       }).format(parsedDate)
     : lesson.date;
   const startTime = formatStartTime(parsedDate, lesson.time);
-  const userName = adminUser?.userName ? `@${adminUser.userName}` : null;
-  const phoneNumber = formatPhoneNumber(adminUser?.phoneNumber);
-  const fullName = adminUser?.fullName?.trim() || bookedByLabel || null;
+ 
   const bookingId = lesson.telegramUserId
     ? String(lesson.telegramUserId)
     : lesson._id;

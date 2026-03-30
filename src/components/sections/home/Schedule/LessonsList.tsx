@@ -48,7 +48,9 @@ export default function LessonsList() {
   const { t } = useLanguage();
   const { telegramUserId, isAdmin } = useTelegramUser();
   const [lessons, setLessons] = useState<Lesson[]>([]);
-  const [usersByTelegramId, setUsersByTelegramId] = useState<Record<string, User | null>>({});
+  const [usersByTelegramId, setUsersByTelegramId] = useState<
+    Record<string, User | null>
+  >({});
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState("");
   const [deletingLessonId, setDeletingLessonId] = useState("");
@@ -88,7 +90,9 @@ export default function LessonsList() {
           isAdmin ? {} : { telegramUserId: telegramUserId ?? undefined }
         );
         const sortedLessons = [...response.lessons].sort(
-          (a, b) => (parseLessonStart(a)?.getTime() ?? 0) - (parseLessonStart(b)?.getTime() ?? 0)
+          (a, b) =>
+            (parseLessonStart(a)?.getTime() ?? 0) -
+            (parseLessonStart(b)?.getTime() ?? 0)
         );
         setLessons(sortedLessons);
 
@@ -111,7 +115,10 @@ export default function LessonsList() {
               const user = await getUserByTelegramId(id);
               return [id, user] as const;
             } catch (userError) {
-              console.error(`Failed to load user by telegram id ${id}:`, userError);
+              console.error(
+                `Failed to load user by telegram id ${id}:`,
+                userError
+              );
               return [id, null] as const;
             }
           })
@@ -120,7 +127,9 @@ export default function LessonsList() {
         setUsersByTelegramId(Object.fromEntries(userEntries));
       } catch (loadError) {
         console.error("Failed to load lessons:", loadError);
-        setError(isAdmin ? t("lessons.loadErrorAdmin") : t("lessons.loadErrorUser"));
+        setError(
+          isAdmin ? t("lessons.loadErrorAdmin") : t("lessons.loadErrorUser")
+        );
       } finally {
         setIsLoading(false);
       }
@@ -146,7 +155,9 @@ export default function LessonsList() {
       setDeletingLessonId(lesson._id);
       setError("");
       await deleteLesson(lesson._id);
-      setLessons((current) => current.filter((item) => item._id !== lesson._id));
+      setLessons((current) =>
+        current.filter((item) => item._id !== lesson._id)
+      );
     } catch (deleteError) {
       console.error("Failed to delete lesson:", deleteError);
       setError(t("lessons.deleteError"));
@@ -170,12 +181,11 @@ export default function LessonsList() {
               hallLabel={LOCATION_LABELS[lesson.location]}
               typeLabel={typeLabels[lesson.typeOfLesson]}
               durationLabel={durationLabels[lesson.duration]}
-              bookedByLabel={
+              adminUser={
                 isAdmin
-                  ? usersByTelegramId[lesson.telegramUserId]?.fullName ?? lesson.telegramUserId
+                  ? (usersByTelegramId[lesson.telegramUserId] ?? null)
                   : null
               }
-              adminUser={isAdmin ? usersByTelegramId[lesson.telegramUserId] ?? null : null}
               isDeleting={deletingLessonId === lesson._id}
               onCancel={handleDelete}
             />
