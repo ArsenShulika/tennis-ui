@@ -13,6 +13,13 @@ import { User } from "../types/user";
 export const ADMIN_TELEGRAM_USER_ID = "2076217332";
 
 const DEV_OVERRIDE_STORAGE_KEY = "telegram-webapp-dev-user";
+const DEV_DEFAULT_ADMIN_USER: TelegramWebAppUser = {
+  id: Number(ADMIN_TELEGRAM_USER_ID),
+  first_name: "Admin",
+  last_name: "Local",
+  username: "local_admin",
+  language_code: "uk",
+};
 
 export type TelegramWebAppUser = {
   id: number;
@@ -66,6 +73,10 @@ function resolveTelegramUser(): { user: TelegramWebAppUser | null; source: Teleg
   const telegramUser = readTelegramWebAppUser();
   if (telegramUser) {
     return { user: telegramUser, source: "telegram-webapp" };
+  }
+
+  if (import.meta.env.DEV) {
+    return { user: DEV_DEFAULT_ADMIN_USER, source: "dev-override" };
   }
 
   return { user: null, source: "none" };
@@ -126,17 +137,17 @@ export function TelegramUserProvider({ children }: { children: ReactNode }) {
         const telegramUserId = String(telegramUser.id);
         const existingUser = await getUserByTelegramId(telegramUserId);
         setAppUser(existingUser);
-      } catch (error) {
-        const isNotFound =
-          axios.isAxiosError(error) &&
-          (error.response?.status === 404 || error.response?.status === 400);
+      } catch {
+        // const isNotFound =
+        //   axios.isAxiosError(error) &&
+        //   (error.response?.status === 404 || error.response?.status === 400);
 
-        if (!isNotFound) {
-          console.error("Failed to load app user:", error);
-          setAppUser(null);
-          setIsUserSyncing(false);
-          return;
-        }
+        // if (!isNotFound) {
+        //   console.error("Failed to load app user:", error);
+        //   setAppUser(null);
+        //   setIsUserSyncing(false);
+        //   return;
+        // }
 
         try {
           const createdUser = await createUser({

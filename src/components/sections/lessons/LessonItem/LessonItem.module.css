@@ -9,6 +9,13 @@
   box-shadow: 0 16px 36px rgba(15, 23, 42, 0.08);
 }
 
+.itemCompact {
+  gap: 10px;
+  padding: 14px 16px;
+  border-radius: 18px;
+  box-shadow: 0 8px 20px rgba(15, 23, 42, 0.06);
+}
+
 .topRow {
   display: flex;
   align-items: flex-start;
@@ -25,6 +32,12 @@
   flex-direction: column;
   align-items: flex-end;
   gap: 8px;
+}
+
+.scheduleMetaCompact {
+  flex-direction: row;
+  flex-wrap: wrap;
+  gap: 6px;
 }
 
 .dateText {
@@ -102,6 +115,19 @@
   gap: 8px;
 }
 
+.compactBody {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.compactMain {
+  min-width: 0;
+  display: grid;
+  gap: 4px;
+}
+
 .hallRow {
   display: flex;
   align-items: center;
@@ -114,6 +140,13 @@
   font-size: 1.18rem;
   font-weight: 700;
   letter-spacing: -0.01em;
+}
+
+.customerName {
+  margin: 0;
+  color: #526277;
+  font-size: 0.92rem;
+  font-weight: 600;
 }
 
 .discountBadge {
@@ -141,61 +174,16 @@
   font-weight: 600;
 }
 
+.compactMeta {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  justify-content: flex-end;
+  flex: 0 0 auto;
+}
+
 .typeText {
   color: #4f6fa8;
-}
-
-.metaDivider {
-  color: #cbd5e1;
-}
-
-.bookingId {
-  color: #64748b;
-  font-variant-numeric: tabular-nums;
-}
-
-.adminPanel {
-  display: grid;
-  gap: 10px;
-  padding: 12px;
-  border: 1px solid #e7edf4;
-  border-radius: 18px;
-  background: #f8fbff;
-}
-
-.adminHeader {
-  color: #334155;
-  font-size: 0.76rem;
-  font-weight: 700;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-}
-
-.adminGrid {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 10px 12px;
-}
-
-.infoItem {
-  display: grid;
-  gap: 3px;
-  min-width: 0;
-}
-
-.infoLabel {
-  color: #94a3b8;
-  font-size: 0.72rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-}
-
-.infoValue {
-  color: #1e293b;
-  font-size: 0.88rem;
-  font-weight: 600;
-  overflow-wrap: anywhere;
 }
 
 .footer {
@@ -257,12 +245,17 @@
     flex-wrap: wrap;
   }
 
-  .adminGrid {
-    grid-template-columns: 1fr;
-  }
-
   .lessonMeta {
     gap: 6px;
+  }
+
+  .compactBody {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .compactMeta {
+    justify-content: flex-start;
   }
 
   .footer {

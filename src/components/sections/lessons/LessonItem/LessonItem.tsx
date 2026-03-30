@@ -1,3 +1,5 @@
+import { useQuery } from "@tanstack/react-query";
+import { getUserByTelegramId } from "../../../../api/usersapi";
 import { useLanguage } from "../../../../hooks/useLanguage";
 import { Lesson } from "../../../../types/lesson";
 import { User } from "../../../../types/user";
@@ -6,8 +8,6 @@ import {
   formatLessonDateLabel,
   parseLessonStart,
 } from "../../home/Schedule/lessonDate";
-import { useQuery } from "@tanstack/react-query";
-import { getUserByTelegramId } from "../../../../api/usersapi";
 
 type Props = {
   lesson: Lesson;
@@ -44,17 +44,21 @@ export default function LessonItem({
   const parsedDate = parseLessonStart(lesson);
   const headerDate = formatLessonDateLabel(parsedDate, locale, lesson.date);
   const startTime = formatStartTime(parsedDate, lesson.time);
-  const bookingId = lesson.telegramUserId ? String(lesson.telegramUserId) : lesson._id;
-const userQuery = useQuery({queryKey: ["telegramUser", bookingId],
-  queryFn: () => getUserByTelegramId(bookingId)
-})
 
-const user = userQuery.data;
+  const userQuery = useQuery({
+    queryKey: ["telegramUser", lesson.telegramUserId],
+    queryFn: () => getUserByTelegramId(lesson.telegramUserId),
+    enabled: showAdminDetails && Boolean(lesson.telegramUserId),
+    initialData: adminUser ?? undefined,
+  });
+  console.log(userQuery.data)
+  const customerName = userQuery.data?.fullName ?? t("common.notSpecified");
+
   return (
-    <li className={css.item}>
+    <li className={`${css.item} ${showAdminDetails ? css.itemCompact : ""}`.trim()}>
       <div className={`${css.topRow} ${showDate ? "" : css.topRowNoDate}`.trim()}>
         {showDate ? <span className={css.dateText}>{headerDate}</span> : null}
-        <div className={css.scheduleMeta}>
+        <div className={`${css.scheduleMeta} ${showAdminDetails ? css.scheduleMetaCompact : ""}`.trim()}>
           <span className={css.metaPill}>
             <span className={css.clockIcon} aria-hidden />
             {startTime}
@@ -66,55 +70,28 @@ const user = userQuery.data;
         </div>
       </div>
 
-      <div className={css.lessonInfo}>
-        <div className={css.hallRow}>
-          <h3 className={css.hall}>{hallLabel}</h3>
-          {lesson.multisport ? <span className={css.discountBadge}>M</span> : null}
-        </div>
-        <div className={css.lessonMeta}>
-          <span className={css.typeText}>{typeLabel}</span>
-          {showAdminDetails ? (
-            <>
-              <span className={css.metaDivider} aria-hidden>
-                •
-              </span>
-              <span className={css.bookingId}>ID: {bookingId}</span>
-            </>
-          ) : null}
-        </div>
-      </div>
-
       {showAdminDetails ? (
-        <div className={css.adminPanel}>
-          <div className={css.adminHeader}>{t("lessons.customerData")}</div>
-          <div className={css.adminGrid}>
-            <div className={css.infoItem}>
-              <span className={css.infoLabel}>{t("lessons.fullName")}</span>
-              <span className={css.infoValue}>
-                {user?.fullName ?? t("common.notSpecified")}
-              </span>
-            </div>
-            <div className={css.infoItem}>
-              <span className={css.infoLabel}>Telegram Username</span>
-              <span className={css.infoValue}>
-                {user?.userName ? `@${user.userName}` : t("common.notSpecified")}
-              </span>
-            </div>
-            <div className={css.infoItem}>
-              <span className={css.infoLabel}>{t("lessons.phone")}</span>
-              <span className={css.infoValue}>
-                {user?.phoneNumber ?? t("common.notSpecified")}
-              </span>
-            </div>
-            <div className={css.infoItem}>
-              <span className={css.infoLabel}>Telegram ID</span>
-              <span className={css.infoValue}>
-                {adminUser?.telegramUserId ?? lesson.telegramUserId ?? t("common.notSpecified")}
-              </span>
-            </div>
+        <div className={css.compactBody}>
+          <div className={css.compactMain}>
+            <h3 className={css.hall}>{hallLabel}</h3>
+            <p className={css.customerName}>{customerName}</p>
+          </div>
+          <div className={css.compactMeta}>
+            <span className={css.typeText}>{typeLabel}</span>
+            {lesson.multisport ? <span className={css.discountBadge}>M</span> : null}
           </div>
         </div>
-      ) : null}
+      ) : (
+        <div className={css.lessonInfo}>
+          <div className={css.hallRow}>
+            <h3 className={css.hall}>{hallLabel}</h3>
+            {lesson.multisport ? <span className={css.discountBadge}>M</span> : null}
+          </div>
+          <div className={css.lessonMeta}>
+            <span className={css.typeText}>{typeLabel}</span>
+          </div>
+        </div>
+      )}
 
       <div className={css.footer}>
         <button
