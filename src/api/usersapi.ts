@@ -26,6 +26,8 @@ export type CreateUserBody = {
   currency: string;
 };
 
+export type UpdateUserBody = Partial<CreateUserBody>;
+
 export const getAllUsers = async (params: GetAllUsersParams) => {
   const result = await serverApi.get<GetAllUsersRespons>("/users", { params });
   return result.data;
@@ -38,5 +40,10 @@ export const getUserByTelegramId = async (telegramUserId: string) => {
 
 export const createUser = async (body: CreateUserBody) => {
   const result = await serverApi.post<User>("/users", body);
+  return result.data;
+};
+
+export const updateUser = async (userId: string, body: UpdateUserBody) => {
+  const result = await serverApi.patch<User>(`/users/${userId}`, body);
   return result.data;
 };

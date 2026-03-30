@@ -135,7 +135,12 @@ export function TelegramUserProvider({ children }: { children: ReactNode }) {
         setIsUserSyncing(true);
         const telegramUserId = String(telegramUser.id);
         const existingUser = await getUserByTelegramId(telegramUserId);
-        setAppUser(existingUser);
+        if(existingUser) {
+          setAppUser(existingUser);
+        } else {
+          throw new Error("Not found");
+          
+        }
       } catch {
         // const isNotFound =
         //   axios.isAxiosError(error) &&

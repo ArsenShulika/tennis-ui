@@ -1,15 +1,16 @@
 import { useMemo } from "react";
 import { useSearchParams } from "react-router-dom";
 import AdminAvailabilitySection from "../../components/sections/admin/AdminAvailabilitySection/AdminAvailabilitySection";
+import AdminUsersSection from "../../components/sections/admin/AdminUsersSection/AdminUsersSection";
 import AdminBookingPage from "../AdminBookingPage/AdminBookingPage";
 import AdminLessonsPage from "../AdminLessonsPage/AdminLessonsPage";
 import { useLanguage } from "../../hooks/useLanguage";
 import css from "./AdminPage.module.css";
 
-type AdminSection = "availability" | "lessons" | "booking";
+type AdminSection = "availability" | "lessons" | "booking" | "users";
 
 function isAdminSection(value: string | null): value is AdminSection {
-  return value === "availability" || value === "lessons" || value === "booking";
+  return value === "availability" || value === "lessons" || value === "booking" || value === "users";
 }
 
 export default function AdminPage() {
@@ -35,6 +36,11 @@ export default function AdminPage() {
         key: "booking" as const,
         label: t("adminBooking.title"),
         description: t("adminBooking.subtitle"),
+      },
+      {
+        key: "users" as const,
+        label: t("adminUsers.title"),
+        description: t("adminUsers.subtitle"),
       },
     ],
     [t]
@@ -75,6 +81,7 @@ export default function AdminPage() {
       {activeSection === "availability" ? <AdminAvailabilitySection /> : null}
       {activeSection === "lessons" ? <AdminLessonsPage /> : null}
       {activeSection === "booking" ? <AdminBookingPage /> : null}
+      {activeSection === "users" ? <AdminUsersSection /> : null}
     </div>
   );
 }
