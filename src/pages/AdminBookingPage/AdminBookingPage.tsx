@@ -13,6 +13,8 @@ const LOCATION_LABELS: Record<LessonLocation, string> = {
   gem: "Hala wielofunkcyjna GEM",
   oko: "Korty Morskie Oko",
 };
+const HOURS_START = 8;
+const HOURS_END = 22;
 
 function pad2(value: number) {
   return value.toString().padStart(2, "0");
@@ -33,13 +35,16 @@ function formatDateLabel(dateValue: string, locale: string) {
 }
 
 function buildTimeOptions() {
-  return Array.from({ length: 24 * 4 }, (_, index) => {
-    const totalMinutes = index * 15;
-    const hours = pad2(Math.floor(totalMinutes / 60));
-    const minutes = pad2(totalMinutes % 60);
-    const value = `${hours}:${minutes}`;
-    return { value, label: value };
-  });
+  const options: { value: string; label: string }[] = [];
+
+  for (let hour = HOURS_START; hour < HOURS_END; hour += 1) {
+    for (let minutes = 0; minutes < 60; minutes += 30) {
+      const value = `${pad2(hour)}:${pad2(minutes)}`;
+      options.push({ value, label: value });
+    }
+  }
+
+  return options;
 }
 
 const TIME_OPTIONS = buildTimeOptions();
