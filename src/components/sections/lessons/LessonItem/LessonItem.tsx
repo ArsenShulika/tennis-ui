@@ -6,6 +6,8 @@ import {
   formatLessonDateLabel,
   parseLessonStart,
 } from "../../home/Schedule/lessonDate";
+import { useQuery } from "@tanstack/react-query";
+import { getUserByTelegramId } from "../../../../api/usersapi";
 
 type Props = {
   lesson: Lesson;
@@ -43,7 +45,11 @@ export default function LessonItem({
   const headerDate = formatLessonDateLabel(parsedDate, locale, lesson.date);
   const startTime = formatStartTime(parsedDate, lesson.time);
   const bookingId = lesson.telegramUserId ? String(lesson.telegramUserId) : lesson._id;
+const userQuery = useQuery({queryKey: ["telegramUser", bookingId],
+  queryFn: () => getUserByTelegramId(bookingId)
+})
 
+const user = userQuery.data;
   return (
     <li className={css.item}>
       <div className={`${css.topRow} ${showDate ? "" : css.topRowNoDate}`.trim()}>
@@ -85,19 +91,19 @@ export default function LessonItem({
             <div className={css.infoItem}>
               <span className={css.infoLabel}>{t("lessons.fullName")}</span>
               <span className={css.infoValue}>
-                {adminUser?.fullName ?? t("common.notSpecified")}
+                {user?.fullName ?? t("common.notSpecified")}
               </span>
             </div>
             <div className={css.infoItem}>
               <span className={css.infoLabel}>Telegram Username</span>
               <span className={css.infoValue}>
-                {adminUser?.userName ? `@${adminUser.userName}` : t("common.notSpecified")}
+                {user?.userName ? `@${user.userName}` : t("common.notSpecified")}
               </span>
             </div>
             <div className={css.infoItem}>
               <span className={css.infoLabel}>{t("lessons.phone")}</span>
               <span className={css.infoValue}>
-                {adminUser?.phoneNumber ?? t("common.notSpecified")}
+                {user?.phoneNumber ?? t("common.notSpecified")}
               </span>
             </div>
             <div className={css.infoItem}>
