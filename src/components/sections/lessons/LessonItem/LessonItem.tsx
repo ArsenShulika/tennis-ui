@@ -1,7 +1,10 @@
+import { useEffect, useState } from "react";
 import { useLanguage } from "../../../../hooks/useLanguage";
 import { Lesson } from "../../../../types/lesson";
 import { User } from "../../../../types/user";
 import css from "./LessonItem.module.css";
+import { useQuery } from "@tanstack/react-query";
+import { getUserByTelegramId } from "../../../../api/usersapi";
 
 type Props = {
   lesson: Lesson;
@@ -71,6 +74,7 @@ export default function LessonItem({
   isDeleting = false,
   onCancel,
 }: Props) {
+  const userId = lesson.telegramUserId;
   const { locale, t } = useLanguage();
   const parsedDate = parseLessonDate(lesson.date, lesson.time);
   const headerDate = parsedDate
@@ -85,8 +89,18 @@ export default function LessonItem({
   const userName = adminUser?.userName ? `@${adminUser.userName}` : null;
   const phoneNumber = formatPhoneNumber(adminUser?.phoneNumber);
   const fullName = adminUser?.fullName?.trim() || bookedByLabel || null;
-  const bookingId = lesson.telegramUserId ? String(lesson.telegramUserId) : lesson._id;
+  const bookingId = lesson.telegramUserId
+    ? String(lesson.telegramUserId)
+    : lesson._id;
 
+  const userQuery = useQuery({
+    queryKey: ["telegramUser", userId],
+    queryFn: () => getUserByTelegramId(userId)
+  });
+
+  
+  const user = userQuery.data;
+  
   return (
     <li className={css.item}>
       <div className={css.topRow}>
@@ -106,7 +120,9 @@ export default function LessonItem({
       <div className={css.lessonInfo}>
         <div className={css.hallRow}>
           <h3 className={css.hall}>{hallLabel}</h3>
-          {lesson.multisport ? <span className={css.discountBadge}>M</span> : null}
+          {lesson.multisport ? (
+            <span className={css.discountBadge}>M</span>
+          ) : null}
         </div>
         <div className={css.lessonMeta}>
           <span className={css.typeText}>{typeLabel}</span>
@@ -127,15 +143,21 @@ export default function LessonItem({
           <div className={css.adminGrid}>
             <div className={css.infoItem}>
               <span className={css.infoLabel}>{t("lessons.fullName")}</span>
-              <span className={css.infoValue}>{fullName ?? t("common.notSpecified")}</span>
+              <span className={css.infoValue}>
+                {user?.fullName ?? t("common.notSpecified")}
+              </span>
             </div>
             <div className={css.infoItem}>
               <span className={css.infoLabel}>Telegram</span>
-              <span className={css.infoValue}>{userName ?? t("common.notSpecified")}</span>
+              <span className={css.infoValue}>
+                {user?.userName ?? t("common.notSpecified")}
+              </span>
             </div>
             <div className={css.infoItem}>
               <span className={css.infoLabel}>{t("lessons.phone")}</span>
-              <span className={css.infoValue}>{phoneNumber ?? t("common.notSpecified")}</span>
+              <span className={css.infoValue}>
+                {user?.phoneNumber ?? t("common.notSpecified")}
+              </span>
             </div>
             <div className={css.infoItem}>
               <span className={css.infoLabel}>Telegram ID</span>
