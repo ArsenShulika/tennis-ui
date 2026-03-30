@@ -7,6 +7,7 @@ type Props = {
   value: string;
   onChange: (value: string) => void;
   minDate?: string;
+  allowPastDates?: boolean;
   label: string;
   placeholder?: string;
 };
@@ -73,6 +74,7 @@ export default function CustomDatePicker({
   value,
   onChange,
   minDate,
+  allowPastDates = false,
   label,
   placeholder,
 }: Props) {
@@ -83,15 +85,16 @@ export default function CustomDatePicker({
     const now = new Date();
     return new Date(now.getFullYear(), now.getMonth(), now.getDate());
   }, []);
-  const minDateObject = useMemo(() => parseDateValue(minDate ?? "") ?? today, [minDate, today]);
+  const minDateObject = useMemo(() => {
+    if (allowPastDates) return null;
+    return parseDateValue(minDate ?? "") ?? today;
+  }, [allowPastDates, minDate, today]);
   const selectedDate = useMemo(() => parseDateValue(value), [value]);
-  const [visibleMonth, setVisibleMonth] = useState<Date>(() =>
-    startOfMonth(selectedDate ?? minDateObject)
-  );
+  const [visibleMonth, setVisibleMonth] = useState<Date>(() => startOfMonth(selectedDate ?? today));
 
   useEffect(() => {
-    setVisibleMonth(startOfMonth(selectedDate ?? minDateObject));
-  }, [selectedDate, minDateObject]);
+    setVisibleMonth(startOfMonth(selectedDate ?? minDateObject ?? today));
+  }, [selectedDate, minDateObject, today]);
 
   useEffect(() => {
     if (!isOpen) return;
@@ -162,8 +165,9 @@ export default function CustomDatePicker({
     language === "uk" ? ` ${t("datePicker.yearShort")}` : ""
   }`;
   const calendarDays = useMemo(() => buildCalendarDays(visibleMonth), [visibleMonth]);
-  const canGoToPreviousMonth =
-    startOfMonth(visibleMonth).getTime() > startOfMonth(minDateObject).getTime();
+  const canGoToPreviousMonth = minDateObject
+    ? startOfMonth(visibleMonth).getTime() > startOfMonth(minDateObject).getTime()
+    : true;
 
   return (
     <div className={css.root} ref={rootRef}>
@@ -223,7 +227,7 @@ export default function CustomDatePicker({
             {calendarDays.map((day) => {
               const dateValue = formatDateValue(day);
               const isOutsideMonth = day.getMonth() !== visibleMonth.getMonth();
-              const isDisabled = isBeforeDay(day, minDateObject);
+              const isDisabled = minDateObject ? isBeforeDay(day, minDateObject) : false;
               const isSelected = selectedDate ? isSameDay(day, selectedDate) : false;
               const isToday = isSameDay(day, today);
 

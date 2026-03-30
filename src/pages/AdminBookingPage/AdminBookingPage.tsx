@@ -1,10 +1,10 @@
 import { FormEvent, useEffect, useMemo, useState } from "react";
-import { createLesson, GetAllLessons } from "../../api/lessonsapi";
+import { createLesson } from "../../api/lessonsapi";
 import { getAllUsers } from "../../api/usersapi";
 import CustomDatePicker from "../../components/shared/CustomDatePicker/CustomDatePicker";
 import CustomDropdownSelect from "../../components/shared/CustomDropdownSelect/CustomDropdownSelect";
 import { useLanguage } from "../../hooks/useLanguage";
-import { Lesson, LessonDuration, LessonLocation, LessonType, NewLesson } from "../../types/lesson";
+import { LessonDuration, LessonLocation, LessonType, NewLesson } from "../../types/lesson";
 import { User } from "../../types/user";
 import css from "./AdminBookingPage.module.css";
 
@@ -16,53 +16,6 @@ const LOCATION_LABELS: Record<LessonLocation, string> = {
 
 function pad2(value: number) {
   return value.toString().padStart(2, "0");
-}
-
-function formatDate(date: Date) {
-  return `${date.getFullYear()}-${pad2(date.getMonth() + 1)}-${pad2(date.getDate())}`;
-}
-
-function parseLocalDateTime(value: string) {
-  const normalizedValue = value.trim().replace(" ", "T");
-  const match = normalizedValue.match(
-    /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})(?::(\d{2}))?/
-  );
-
-  if (!match) {
-    const fallback = new Date(normalizedValue);
-    return Number.isNaN(fallback.getTime()) ? null : fallback;
-  }
-
-  const [, year, month, day, hours, minutes, seconds = "00"] = match;
-  return new Date(
-    Number(year),
-    Number(month) - 1,
-    Number(day),
-    Number(hours),
-    Number(minutes),
-    Number(seconds)
-  );
-}
-
-function parseLessonStart(lesson: Lesson) {
-  if (lesson.date.includes("T") || lesson.date.includes(" ")) {
-    return parseLocalDateTime(lesson.date);
-  }
-
-  if (lesson.time) {
-    return parseLocalDateTime(`${lesson.date}T${lesson.time}:00`);
-  }
-
-  return parseLocalDateTime(`${lesson.date}T00:00:00`);
-}
-
-function getLessonDurationMinutes(duration: LessonDuration) {
-  const numericValue = Number(duration.slice(1));
-  return Number.isNaN(numericValue) ? 0 : numericValue;
-}
-
-function createLessonStart(date: string, time: string) {
-  return new Date(`${date}T${time}:00`);
 }
 
 function formatDateLabel(dateValue: string, locale: string) {
@@ -90,7 +43,6 @@ const TIME_OPTIONS = buildTimeOptions();
 export default function AdminBookingPage() {
   const { locale, t } = useLanguage();
   const [users, setUsers] = useState<User[]>([]);
-  const [lessons, setLessons] = useState<Lesson[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
@@ -137,13 +89,9 @@ export default function AdminBookingPage() {
         setIsLoading(true);
         setError("");
 
-        const [usersResponse, lessonsResponse] = await Promise.all([
-          getAllUsers({ perPage: 500 }),
-          GetAllLessons({ perPage: 500 }),
-        ]);
+        const usersResponse = await getAllUsers({ perPage: 500 });
 
         setUsers(usersResponse.users);
-        setLessons(lessonsResponse.lessons);
       } catch (loadError) {
         console.error("Failed to load admin booking data:", loadError);
         setError(t("adminBooking.loadError"));
@@ -192,35 +140,6 @@ export default function AdminBookingPage() {
     [selectedDates]
   );
 
-  const conflictDates = useMemo(() => {
-    if (!time || selectedDates.length === 0) return [];
-
-    const requestedDuration = getLessonDurationMinutes(duration);
-
-    return sortedSelectedDates.filter((dateValue) => {
-      const requestedStart = createLessonStart(dateValue, time);
-      const requestedEnd = new Date(requestedStart.getTime() + requestedDuration * 60 * 1000);
-
-      return lessons.some((lesson) => {
-        if (lesson.location !== location) return false;
-
-        const lessonStart = parseLessonStart(lesson);
-        if (!lessonStart || formatDate(lessonStart) !== dateValue) return false;
-
-        const lessonEnd = new Date(
-          lessonStart.getTime() + getLessonDurationMinutes(lesson.duration) * 60 * 1000
-        );
-
-        return requestedStart < lessonEnd && requestedEnd > lessonStart;
-      });
-    });
-  }, [duration, lessons, location, sortedSelectedDates, time]);
-
-  const availableDates = useMemo(
-    () => sortedSelectedDates.filter((dateValue) => !conflictDates.includes(dateValue)),
-    [conflictDates, sortedSelectedDates]
-  );
-
   const handleAddDate = () => {
     if (!pendingDate) return;
 
@@ -257,18 +176,12 @@ export default function AdminBookingPage() {
       return;
     }
 
-    if (availableDates.length === 0) {
-      setError(t("adminBooking.validation.conflicts"));
-      setSuccess("");
-      return;
-    }
-
     setIsSubmitting(true);
     setError("");
     setSuccess("");
 
     try {
-      const lessonsToCreate: NewLesson[] = availableDates.map((dateValue) => ({
+      const lessonsToCreate: NewLesson[] = sortedSelectedDates.map((dateValue) => ({
         date: `${dateValue} ${time}`,
         time,
         location,
@@ -284,10 +197,6 @@ export default function AdminBookingPage() {
       );
       const createdCount = results.filter((result) => result.status === "fulfilled").length;
       const failedCount = results.length - createdCount;
-
-      const refreshedLessons = await GetAllLessons({ perPage: 500 });
-      setLessons(refreshedLessons.lessons);
-
       if (createdCount > 0) {
         setSelectedDates([]);
         setPendingDate("");
@@ -379,7 +288,7 @@ export default function AdminBookingPage() {
               id="admin-booking-date"
               value={pendingDate}
               onChange={setPendingDate}
-              minDate="2024-01-01"
+              allowPastDates
               label={t("adminBooking.dateLabel")}
             />
           </div>
@@ -391,13 +300,8 @@ export default function AdminBookingPage() {
         {sortedSelectedDates.length > 0 ? (
           <div className={css.dateList}>
             {sortedSelectedDates.map((dateValue) => {
-              const isConflict = conflictDates.includes(dateValue);
-
               return (
-                <div
-                  key={dateValue}
-                  className={`${css.dateChip} ${isConflict ? css.dateChipConflict : ""}`}
-                >
+                <div key={dateValue} className={css.dateChip}>
                   <span>{formatDateLabel(dateValue, locale)}</span>
                   <button
                     type="button"
@@ -488,14 +392,6 @@ export default function AdminBookingPage() {
             onChange={(event) => setMultisport(event.target.checked)}
           />
         </div>
-
-        {conflictDates.length > 0 ? (
-          <p className={css.hintError}>
-            {t("adminBooking.conflicts", {
-              dates: conflictDates.map((dateValue) => formatDateLabel(dateValue, locale)).join(", "),
-            })}
-          </p>
-        ) : null}
         {error ? <p className={css.hintError}>{error}</p> : null}
         {success ? <p className={css.success}>{success}</p> : null}
 
