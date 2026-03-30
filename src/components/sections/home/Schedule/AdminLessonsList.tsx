@@ -64,6 +64,7 @@ export default function AdminLessonsList({
                 typeLabel={typeLabels[lesson.typeOfLesson]}
                 durationLabel={durationLabels[lesson.duration]}
                 adminUser={usersByTelegramId[lesson.telegramUserId] ?? null}
+                showAdminDetails
                 isDeleting={deletingLessonId === lesson._id}
                 onCancel={onDelete}
                 showDate={false}

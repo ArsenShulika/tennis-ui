@@ -1,4 +1,3 @@
-
 import { useLanguage } from "../../../../hooks/useLanguage";
 import { Lesson } from "../../../../types/lesson";
 import { User } from "../../../../types/user";
@@ -14,6 +13,7 @@ type Props = {
   typeLabel: string;
   durationLabel: string;
   adminUser?: User | null;
+  showAdminDetails?: boolean;
   isDeleting?: boolean;
   onCancel?: (lesson: Lesson) => void;
   showDate?: boolean;
@@ -33,6 +33,7 @@ export default function LessonItem({
   typeLabel,
   durationLabel,
   adminUser = null,
+  showAdminDetails = false,
   isDeleting = false,
   onCancel,
   showDate = true,
@@ -41,11 +42,7 @@ export default function LessonItem({
   const parsedDate = parseLessonStart(lesson);
   const headerDate = formatLessonDateLabel(parsedDate, locale, lesson.date);
   const startTime = formatStartTime(parsedDate, lesson.time);
-
-  const bookingId = lesson.telegramUserId
-    ? String(lesson.telegramUserId)
-    : lesson._id;
-  const user = adminUser;
+  const bookingId = lesson.telegramUserId ? String(lesson.telegramUserId) : lesson._id;
 
   return (
     <li className={css.item}>
@@ -66,13 +63,11 @@ export default function LessonItem({
       <div className={css.lessonInfo}>
         <div className={css.hallRow}>
           <h3 className={css.hall}>{hallLabel}</h3>
-          {lesson.multisport ? (
-            <span className={css.discountBadge}>M</span>
-          ) : null}
+          {lesson.multisport ? <span className={css.discountBadge}>M</span> : null}
         </div>
         <div className={css.lessonMeta}>
           <span className={css.typeText}>{typeLabel}</span>
-          {adminUser ? (
+          {showAdminDetails ? (
             <>
               <span className={css.metaDivider} aria-hidden>
                 •
@@ -83,31 +78,33 @@ export default function LessonItem({
         </div>
       </div>
 
-      {adminUser ? (
+      {showAdminDetails ? (
         <div className={css.adminPanel}>
           <div className={css.adminHeader}>{t("lessons.customerData")}</div>
           <div className={css.adminGrid}>
             <div className={css.infoItem}>
               <span className={css.infoLabel}>{t("lessons.fullName")}</span>
               <span className={css.infoValue}>
-                {user?.fullName ?? t("common.notSpecified")}
+                {adminUser?.fullName ?? t("common.notSpecified")}
               </span>
             </div>
             <div className={css.infoItem}>
-              <span className={css.infoLabel}>Telegram</span>
+              <span className={css.infoLabel}>Telegram Username</span>
               <span className={css.infoValue}>
-                {user?.userName ?? t("common.notSpecified")}
+                {adminUser?.userName ? `@${adminUser.userName}` : t("common.notSpecified")}
               </span>
             </div>
             <div className={css.infoItem}>
               <span className={css.infoLabel}>{t("lessons.phone")}</span>
               <span className={css.infoValue}>
-                {user?.phoneNumber ?? t("common.notSpecified")}
+                {adminUser?.phoneNumber ?? t("common.notSpecified")}
               </span>
             </div>
             <div className={css.infoItem}>
               <span className={css.infoLabel}>Telegram ID</span>
-              <span className={css.infoValue}>{lesson.telegramUserId}</span>
+              <span className={css.infoValue}>
+                {adminUser?.telegramUserId ?? lesson.telegramUserId ?? t("common.notSpecified")}
+              </span>
             </div>
           </div>
         </div>
