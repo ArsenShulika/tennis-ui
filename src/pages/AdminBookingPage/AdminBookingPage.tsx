@@ -18,6 +18,10 @@ function pad2(value: number) {
   return value.toString().padStart(2, "0");
 }
 
+function formatDateInputValue(date: Date) {
+  return `${date.getFullYear()}-${pad2(date.getMonth() + 1)}-${pad2(date.getDate())}`;
+}
+
 function formatDateLabel(dateValue: string, locale: string) {
   const date = new Date(`${dateValue}T00:00:00`);
   return new Intl.DateTimeFormat(locale, {
@@ -139,6 +143,7 @@ export default function AdminBookingPage() {
     () => [...selectedDates].sort((left, right) => left.localeCompare(right)),
     [selectedDates]
   );
+  const minDate = useMemo(() => formatDateInputValue(new Date()), []);
 
   const handleAddDate = () => {
     if (!pendingDate) return;
@@ -181,6 +186,7 @@ export default function AdminBookingPage() {
     setSuccess("");
 
     try {
+      const trimmedComments = comments.trim();
       const lessonsToCreate: NewLesson[] = sortedSelectedDates.map((dateValue) => ({
         date: `${dateValue} ${time}`,
         time,
@@ -188,8 +194,8 @@ export default function AdminBookingPage() {
         duration,
         typeOfLesson,
         multisport,
-        comments: comments.trim() || undefined,
         telegramUserId: selectedUser.telegramUserId,
+        ...(trimmedComments ? { comments: trimmedComments } : {}),
       }));
 
       const results = await Promise.allSettled(
@@ -288,7 +294,7 @@ export default function AdminBookingPage() {
               id="admin-booking-date"
               value={pendingDate}
               onChange={setPendingDate}
-              allowPastDates
+              minDate={minDate}
               label={t("adminBooking.dateLabel")}
             />
           </div>
