@@ -8,7 +8,7 @@ const HomePage = () => {
   const { isAdmin } = useTelegramUser();
 
   const handleAdminSlotSelect = ({ date, time }: { date: string; time: string }) => {
-    const searchParams = new URLSearchParams({ date, time });
+    const searchParams = new URLSearchParams({ section: "availability", date, time });
     navigate(`/admin?${searchParams.toString()}`);
   };
 

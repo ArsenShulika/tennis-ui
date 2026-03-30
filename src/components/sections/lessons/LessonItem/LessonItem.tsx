@@ -3,53 +3,21 @@ import { useLanguage } from "../../../../hooks/useLanguage";
 import { Lesson } from "../../../../types/lesson";
 import { User } from "../../../../types/user";
 import css from "./LessonItem.module.css";
-import { useQuery } from "@tanstack/react-query";
-import { getUserByTelegramId } from "../../../../api/usersapi";
+import {
+  formatLessonDateLabel,
+  parseLessonStart,
+} from "../../home/Schedule/lessonDate";
 
 type Props = {
   lesson: Lesson;
   hallLabel: string;
   typeLabel: string;
   durationLabel: string;
-  bookedByLabel?: string | null;
   adminUser?: User | null;
   isDeleting?: boolean;
   onCancel?: (lesson: Lesson) => void;
+  showDate?: boolean;
 };
-
-function parseLocalDateTime(value: string) {
-  const normalizedValue = value.trim().replace(" ", "T");
-  const match = normalizedValue.match(
-    /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})(?::(\d{2}))?/
-  );
-
-  if (!match) {
-    const fallback = new Date(normalizedValue);
-    return Number.isNaN(fallback.getTime()) ? null : fallback;
-  }
-
-  const [, year, month, day, hours, minutes, seconds = "00"] = match;
-  return new Date(
-    Number(year),
-    Number(month) - 1,
-    Number(day),
-    Number(hours),
-    Number(minutes),
-    Number(seconds)
-  );
-}
-
-function parseLessonDate(dateStr: string, time?: string) {
-  if (dateStr.includes("T") || dateStr.includes(" ")) {
-    return parseLocalDateTime(dateStr);
-  }
-
-  if (time) {
-    return parseLocalDateTime(`${dateStr}T${time}:00`);
-  }
-
-  return parseLocalDateTime(`${dateStr}T00:00:00`);
-}
 
 function formatStartTime(date: Date | null, fallbackTime?: string) {
   if (date) {
@@ -59,8 +27,6 @@ function formatStartTime(date: Date | null, fallbackTime?: string) {
   return fallbackTime || "--:--";
 }
 
-
-
 export default function LessonItem({
   lesson,
   hallLabel,
@@ -69,36 +35,22 @@ export default function LessonItem({
   adminUser = null,
   isDeleting = false,
   onCancel,
+  showDate = true,
 }: Props) {
-  const userId = lesson.telegramUserId;
   const { locale, t } = useLanguage();
-  const parsedDate = parseLessonDate(lesson.date, lesson.time);
-  const headerDate = parsedDate
-    ? new Intl.DateTimeFormat(locale, {
-        weekday: "long",
-        day: "2-digit",
-        month: "2-digit",
-        year: "2-digit",
-      }).format(parsedDate)
-    : lesson.date;
+  const parsedDate = parseLessonStart(lesson);
+  const headerDate = formatLessonDateLabel(parsedDate, locale, lesson.date);
   const startTime = formatStartTime(parsedDate, lesson.time);
- 
+
   const bookingId = lesson.telegramUserId
     ? String(lesson.telegramUserId)
     : lesson._id;
+  const user = adminUser;
 
-  const userQuery = useQuery({
-    queryKey: ["telegramUser", userId],
-    queryFn: () => getUserByTelegramId(userId)
-  });
-
-  
-  const user = userQuery.data;
-  
   return (
     <li className={css.item}>
-      <div className={css.topRow}>
-        <span className={css.dateText}>{headerDate}</span>
+      <div className={`${css.topRow} ${showDate ? "" : css.topRowNoDate}`.trim()}>
+        {showDate ? <span className={css.dateText}>{headerDate}</span> : null}
         <div className={css.scheduleMeta}>
           <span className={css.metaPill}>
             <span className={css.clockIcon} aria-hidden />

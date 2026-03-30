@@ -1,0 +1,250 @@
+.page {
+  display: grid;
+  gap: 16px;
+}
+
+.form {
+  --bg: #ffffff;
+  --text: #1f2937;
+  --muted: #6b7280;
+  --border: #e5e7eb;
+  --border-strong: #d1d5db;
+  --focus: #2563eb;
+  --focus-ring: rgba(37, 99, 235, 0.18);
+  --btn: #2563eb;
+  --btn-hover: #1d4ed8;
+  --field-h: 44px;
+  --field-radius: 10px;
+  --field-px: 12px;
+  --field-text: #5b6b80;
+
+  width: min(100%, 720px);
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 20px;
+  background: var(--bg);
+  color: var(--field-text);
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.05);
+  display: grid;
+  gap: 16px;
+}
+
+.form *,
+.form *::before,
+.form *::after {
+  box-sizing: border-box;
+}
+
+.headingBlock {
+  display: grid;
+  gap: 4px;
+}
+
+.title {
+  margin: 0;
+  font-size: 1.45rem;
+  line-height: 1.1;
+  color: #132238;
+}
+
+.subtitle {
+  margin: 0;
+  color: #6b7280;
+}
+
+.label {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #374151;
+  margin-top: 4px;
+}
+
+.input,
+.textarea {
+  appearance: none;
+  width: 100%;
+  min-width: 0;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--field-radius);
+  background: #fff;
+  color: var(--field-text);
+  font-size: 1rem;
+  line-height: 1.4;
+  transition: background 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.input {
+  height: var(--field-h);
+  padding: 0 var(--field-px);
+}
+
+.textarea {
+  padding: 12px;
+  resize: vertical;
+}
+
+.input:focus,
+.textarea:focus {
+  outline: none;
+  border-color: var(--focus);
+  box-shadow: 0 0 0 3px var(--focus-ring);
+}
+
+.selectField {
+  position: relative;
+  width: 100%;
+  min-width: 0;
+  min-height: var(--field-h);
+  display: flex;
+  align-items: stretch;
+  --nice-select-height: var(--field-h);
+  --nice-select-radius: var(--field-radius);
+  --nice-select-padding-x: var(--field-px);
+  --nice-select-border: var(--border-strong);
+  --nice-select-hover-border: #9ca3af;
+  --nice-select-focus: var(--focus);
+  --nice-select-focus-ring: var(--focus-ring);
+  --nice-select-placeholder: var(--muted);
+  --nice-select-arrow: #9ca3af;
+}
+
+.dateRow {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 160px;
+  gap: 12px;
+  align-items: end;
+}
+
+.secondaryButton,
+.form button[type="submit"] {
+  height: 46px;
+  border-radius: 10px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+}
+
+.secondaryButton {
+  border: 1px solid #cbd5e1;
+  background: #ffffff;
+  color: #1f2937;
+}
+
+.secondaryButton:hover {
+  background: #f8fafc;
+}
+
+.form button[type="submit"] {
+  margin-top: 6px;
+  border: 1px solid transparent;
+  background: var(--btn);
+  color: #fff;
+  box-shadow: 0 2px 8px rgba(37, 99, 235, 0.18);
+}
+
+.form button[type="submit"]:hover {
+  background: var(--btn-hover);
+}
+
+.form button[type="submit"]:disabled {
+  opacity: 0.65;
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+.hint,
+.hintError {
+  margin: -4px 0 0;
+  font-size: 0.9rem;
+}
+
+.hint {
+  color: var(--muted);
+}
+
+.hintError {
+  color: #b91c1c;
+}
+
+.success {
+  margin: 0;
+  padding: 12px 14px;
+  border-radius: 12px;
+  font-size: 0.95rem;
+  background-color: #ecfdf3;
+  color: #166534;
+  border: 1px solid #bbf7d0;
+}
+
+.checkboxRow {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.checkboxRow input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+  accent-color: var(--focus);
+}
+
+.dateList {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.dateChip {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  border-radius: 999px;
+  background: #eff6ff;
+  color: #1e3a8a;
+  border: 1px solid #bfdbfe;
+}
+
+.dateChipConflict {
+  background: #fef2f2;
+  color: #991b1b;
+  border-color: #fecaca;
+}
+
+.removeDateButton {
+  border: none;
+  background: transparent;
+  color: inherit;
+  font-size: 1rem;
+  cursor: pointer;
+  line-height: 1;
+  padding: 0;
+}
+
+@media (max-width: 640px) {
+  .form {
+    width: 100%;
+    padding: 16px;
+    gap: 12px;
+    border-radius: 16px;
+  }
+
+  .dateRow {
+    grid-template-columns: 1fr;
+  }
+
+  .title {
+    font-size: 1.25rem;
+  }
+
+  .form {
+    --field-h: 42px;
+  }
+
+  .checkboxRow {
+    justify-content: space-between;
+    width: 100%;
+  }
+}

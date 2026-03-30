@@ -16,6 +16,18 @@ const App = () => {
             path="/admin"
             element={isAdmin ? <pages.Admin /> : <Navigate to="/" replace />}
           />
+          <Route
+            path="/admin/lessons"
+            element={
+              isAdmin ? <Navigate to="/admin?section=lessons" replace /> : <Navigate to="/" replace />
+            }
+          />
+          <Route
+            path="/admin/booking"
+            element={
+              isAdmin ? <Navigate to="/admin?section=booking" replace /> : <Navigate to="/" replace />
+            }
+          />
           <Route path="/booking" element={<pages.Booking />} />
           <Route path="/lessons" element={<pages.Lessons />} />
           <Route path="/locations" element={<pages.Locations />} />

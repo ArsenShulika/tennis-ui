@@ -5,44 +5,16 @@ import { useLanguage } from "../../../../hooks/useLanguage";
 import { useTelegramUser } from "../../../../hooks/useTelegramUser";
 import { Lesson } from "../../../../types/lesson";
 import { User } from "../../../../types/user";
-import LessonItem from "../../lessons/LessonItem/LessonItem";
 import css from "./LessonsList.module.css";
+import AdminLessonsList from "./AdminLessonsList";
+import UserLessonsList from "./UserLessonsList";
+import { parseLessonStart } from "./lessonDate";
 
 const LOCATION_LABELS: Record<Lesson["location"], string> = {
   awf: "Hala tenisowa AWF",
   gem: "Hala wielofunkcyjna GEM",
   oko: "Korty Morskie Oko",
 };
-
-function parseLocalDateTime(value: string) {
-  const normalizedValue = value.trim().replace(" ", "T");
-  const match = normalizedValue.match(
-    /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})(?::(\d{2}))?/
-  );
-
-  if (!match) {
-    const fallback = new Date(normalizedValue);
-    return Number.isNaN(fallback.getTime()) ? null : fallback;
-  }
-
-  const [, year, month, day, hours, minutes, seconds = "00"] = match;
-  return new Date(
-    Number(year),
-    Number(month) - 1,
-    Number(day),
-    Number(hours),
-    Number(minutes),
-    Number(seconds)
-  );
-}
-
-function parseLessonStart(lesson: Lesson) {
-  if (lesson.date.includes("T") || lesson.date.includes(" ")) {
-    return parseLocalDateTime(lesson.date);
-  }
-
-  return parseLocalDateTime(`${lesson.date}T${lesson.time}:00`);
-}
 
 export default function LessonsList() {
   const { t } = useLanguage();
@@ -173,24 +145,26 @@ export default function LessonsList() {
       </div>
 
       {hasItems ? (
-        <ul className={css.list}>
-          {lessons.map((lesson) => (
-            <LessonItem
-              key={lesson._id}
-              lesson={lesson}
-              hallLabel={LOCATION_LABELS[lesson.location]}
-              typeLabel={typeLabels[lesson.typeOfLesson]}
-              durationLabel={durationLabels[lesson.duration]}
-              adminUser={
-                isAdmin
-                  ? (usersByTelegramId[lesson.telegramUserId] ?? null)
-                  : null
-              }
-              isDeleting={deletingLessonId === lesson._id}
-              onCancel={handleDelete}
-            />
-          ))}
-        </ul>
+        isAdmin ? (
+          <AdminLessonsList
+            lessons={lessons}
+            usersByTelegramId={usersByTelegramId}
+            deletingLessonId={deletingLessonId}
+            onDelete={handleDelete}
+            locationLabels={LOCATION_LABELS}
+            typeLabels={typeLabels}
+            durationLabels={durationLabels}
+          />
+        ) : (
+          <UserLessonsList
+            lessons={lessons}
+            deletingLessonId={deletingLessonId}
+            onDelete={handleDelete}
+            locationLabels={LOCATION_LABELS}
+            typeLabels={typeLabels}
+            durationLabels={durationLabels}
+          />
+        )
       ) : (
         <p className={css.empty}>{emptyStateText}</p>
       )}

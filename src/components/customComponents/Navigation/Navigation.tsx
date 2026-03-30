@@ -8,14 +8,14 @@ const Navigation = () => {
   const { t } = useLanguage();
   const items = [
     { to: "/", label: t("nav.home") },
-    { to: "/admin", label: t("nav.admin") },
+    { to: "/admin", label: t("nav.admin"), adminOnly: true },
     { to: "/booking", label: t("nav.booking") },
     { to: "/lessons", label: t("nav.lessons") },
     { to: "/locations", label: t("nav.locations") },
     { to: "/settings", label: t("nav.settings") },
     { to: "/payments", label: t("nav.payments") },
   ];
-  const visibleItems = items.filter((item) => item.to !== "/admin" || isAdmin);
+  const visibleItems = items.filter((item) => !item.adminOnly || isAdmin);
 
   return (
     <nav className={css.navigation}>
