@@ -6,7 +6,6 @@ import {
   useMemo,
   useState,
 } from "react";
-import axios from "axios";
 import { createUser, getUserByTelegramId } from "../api/usersapi";
 import { User } from "../types/user";
 
