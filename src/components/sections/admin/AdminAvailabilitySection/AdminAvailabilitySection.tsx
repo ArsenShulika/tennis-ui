@@ -130,28 +130,6 @@ function getLessonStart(lesson: Lesson) {
   return parseDateTime(lesson.date);
 }
 
-function findOverlappingLesson(freeHour: FreeHour, lessons: Lesson[]) {
-  const freeHourStart = parseDateTime(freeHour.date);
-  if (!freeHourStart) return null;
-
-  const freeHourEnd = new Date(freeHourStart.getTime() + freeHour.duration * 60 * 1000);
-
-  return (
-    lessons.find((lesson) => {
-      if (lesson.location !== freeHour.location) return false;
-
-      const lessonStart = getLessonStart(lesson);
-      if (!lessonStart) return false;
-
-      const lessonEnd = new Date(
-        lessonStart.getTime() + parseLessonDurationMinutes(lesson.duration) * 60 * 1000
-      );
-
-      return lessonStart < freeHourEnd && lessonEnd > freeHourStart;
-    }) ?? null
-  );
-}
-
 export default function AdminAvailabilitySection() {
   const { t } = useLanguage();
   const [searchParams, setSearchParams] = useSearchParams();
@@ -403,17 +381,6 @@ export default function AdminAvailabilitySection() {
   };
 
   const handleDelete = async (freeHour: FreeHour) => {
-    const overlappingLesson = findOverlappingLesson(freeHour, futureLessons);
-    if (overlappingLesson) {
-      setListError(
-        t("admin.overlapError", {
-          date: formatDatePart(freeHour.date),
-          time: formatTimePart(freeHour.date),
-        })
-      );
-      return;
-    }
-
     const confirmed = window.confirm(t("admin.deleteConfirm"));
     if (!confirmed) return;
 
@@ -516,10 +483,6 @@ export default function AdminAvailabilitySection() {
         {freeHours.length > 0 ? (
           <ul className={css.freeHourList}>
             {freeHours.map((freeHour) => {
-              const overlappingLesson = findOverlappingLesson(freeHour, futureLessons);
-              const isDeleteDisabled =
-                deletingId === freeHour._id || Boolean(overlappingLesson);
-
               return (
                 <li key={freeHour._id} className={css.freeHourItem}>
                   <div className={css.freeHourMeta}>
@@ -530,16 +493,12 @@ export default function AdminAvailabilitySection() {
                       {locationLabels[freeHour.location]} • {freeHour.duration}{" "}
                       {t("common.minutesShort")}
                     </span>
-                    {overlappingLesson ? (
-                      <span className={css.freeHourSecondary}>{t("admin.deleteHint")}</span>
-                    ) : null}
                   </div>
                   <button
                     type="button"
                     className={css.deleteButton}
                     onClick={() => handleDelete(freeHour)}
-                    disabled={isDeleteDisabled}
-                    title={overlappingLesson ? t("admin.deleteHintTitle") : undefined}
+                    disabled={deletingId === freeHour._id}
                   >
                     {deletingId === freeHour._id ? t("common.deleting") : t("common.delete")}
                   </button>
