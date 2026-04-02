@@ -2,15 +2,27 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { useLanguage } from "../../../hooks/useLanguage";
 import css from "./CustomDatePicker.module.css";
 
-type Props = {
+type BaseProps = {
   id: string;
-  value: string;
-  onChange: (value: string) => void;
   minDate?: string;
   allowPastDates?: boolean;
   label: string;
   placeholder?: string;
 };
+
+type SingleProps = BaseProps & {
+  selectionMode?: "single";
+  value: string;
+  onChange: (value: string) => void;
+};
+
+type MultipleProps = BaseProps & {
+  selectionMode: "multiple";
+  selectedDates: string[];
+  onSelectedDatesChange: (values: string[]) => void;
+};
+
+type Props = SingleProps | MultipleProps;
 
 function parseDateValue(value: string) {
   const match = value.match(/^(\d{4})-(\d{2})-(\d{2})$/);
@@ -69,18 +81,33 @@ function buildCalendarDays(month: Date) {
   });
 }
 
+function formatTriggerValue(values: string[], locale: string) {
+  if (values.length === 0) return "";
+
+  const sortedValues = [...values].sort((left, right) => left.localeCompare(right));
+  const visibleLabels = sortedValues
+    .slice(0, 2)
+    .map((dateValue) => formatDisplayDate(dateValue, locale));
+
+  if (sortedValues.length <= 2) {
+    return visibleLabels.join(", ");
+  }
+
+  return `${visibleLabels.join(", ")} +${sortedValues.length - 2}`;
+}
+
 export default function CustomDatePicker({
   id,
-  value,
-  onChange,
   minDate,
   allowPastDates = false,
   label,
   placeholder,
+  ...selectionProps
 }: Props) {
   const { locale, language, t } = useLanguage();
   const rootRef = useRef<HTMLDivElement | null>(null);
   const [isOpen, setIsOpen] = useState(false);
+  const isMultiple = selectionProps.selectionMode === "multiple";
   const today = useMemo(() => {
     const now = new Date();
     return new Date(now.getFullYear(), now.getMonth(), now.getDate());
@@ -89,12 +116,34 @@ export default function CustomDatePicker({
     if (allowPastDates) return null;
     return parseDateValue(minDate ?? "") ?? today;
   }, [allowPastDates, minDate, today]);
-  const selectedDate = useMemo(() => parseDateValue(value), [value]);
-  const [visibleMonth, setVisibleMonth] = useState<Date>(() => startOfMonth(selectedDate ?? today));
+  const singleValue = isMultiple ? "" : selectionProps.value;
+  const selectedDates = isMultiple ? selectionProps.selectedDates : [];
+  const selectedDateValues = isMultiple ? selectedDates : singleValue ? [singleValue] : [];
+  const selectedDate = useMemo(
+    () => (singleValue ? parseDateValue(singleValue) : null),
+    [singleValue]
+  );
+  const firstSelectedDate = useMemo(
+    () =>
+      parseDateValue(
+        [...selectedDateValues].sort((left, right) => left.localeCompare(right))[0] ?? ""
+      ),
+    [selectedDateValues]
+  );
+  const [visibleMonth, setVisibleMonth] = useState<Date>(() =>
+    startOfMonth(selectedDate ?? firstSelectedDate ?? today)
+  );
 
   useEffect(() => {
+    if (isMultiple) {
+      if (selectedDateValues.length === 0) {
+        setVisibleMonth(startOfMonth(minDateObject ?? today));
+      }
+      return;
+    }
+
     setVisibleMonth(startOfMonth(selectedDate ?? minDateObject ?? today));
-  }, [selectedDate, minDateObject, today]);
+  }, [isMultiple, minDateObject, selectedDate, selectedDateValues.length, today]);
 
   useEffect(() => {
     if (!isOpen) return;
@@ -161,6 +210,11 @@ export default function CustomDatePicker({
     [language]
   );
   const resolvedPlaceholder = placeholder ?? t("datePicker.placeholder");
+  const triggerValue = isMultiple
+    ? formatTriggerValue(selectedDateValues, locale)
+    : singleValue
+      ? formatDisplayDate(singleValue, locale)
+      : "";
   const monthLabel = `${monthLabels[visibleMonth.getMonth()]} ${visibleMonth.getFullYear()}${
     language === "uk" ? ` ${t("datePicker.yearShort")}` : ""
   }`;
@@ -168,6 +222,20 @@ export default function CustomDatePicker({
   const canGoToPreviousMonth = minDateObject
     ? startOfMonth(visibleMonth).getTime() > startOfMonth(minDateObject).getTime()
     : true;
+
+  const handleDaySelect = (dateValue: string) => {
+    if (isMultiple) {
+      const nextValues = selectedDateValues.includes(dateValue)
+        ? selectedDateValues.filter((item) => item !== dateValue)
+        : [...selectedDateValues, dateValue];
+
+      selectionProps.onSelectedDatesChange(nextValues);
+      return;
+    }
+
+    selectionProps.onChange(dateValue);
+    setIsOpen(false);
+  };
 
   return (
     <div className={css.root} ref={rootRef}>
@@ -180,7 +248,7 @@ export default function CustomDatePicker({
         aria-expanded={isOpen}
       >
         <span className={css.triggerLabel}>
-          {value ? formatDisplayDate(value, locale) : resolvedPlaceholder}
+          {triggerValue || resolvedPlaceholder}
         </span>
       </button>
 
@@ -228,7 +296,7 @@ export default function CustomDatePicker({
               const dateValue = formatDateValue(day);
               const isOutsideMonth = day.getMonth() !== visibleMonth.getMonth();
               const isDisabled = minDateObject ? isBeforeDay(day, minDateObject) : false;
-              const isSelected = selectedDate ? isSameDay(day, selectedDate) : false;
+              const isSelected = selectedDateValues.includes(dateValue);
               const isToday = isSameDay(day, today);
 
               return (
@@ -240,8 +308,7 @@ export default function CustomDatePicker({
                   } ${isToday ? css.dayToday : ""}`}
                   onClick={() => {
                     if (isDisabled) return;
-                    onChange(dateValue);
-                    setIsOpen(false);
+                    handleDaySelect(dateValue);
                   }}
                   disabled={isDisabled}
                   aria-pressed={isSelected}

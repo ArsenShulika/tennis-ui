@@ -18,6 +18,7 @@ type Props = {
   showAdminDetails?: boolean;
   isDeleting?: boolean;
   onCancel?: (lesson: Lesson) => void;
+  onEdit?: (lesson: Lesson) => void;
   showDate?: boolean;
 };
 
@@ -38,12 +39,16 @@ export default function LessonItem({
   showAdminDetails = false,
   isDeleting = false,
   onCancel,
+  onEdit,
   showDate = true,
 }: Props) {
   const { locale, t } = useLanguage();
   const parsedDate = parseLessonStart(lesson);
   const headerDate = formatLessonDateLabel(parsedDate, locale, lesson.date);
   const startTime = formatStartTime(parsedDate, lesson.time);
+  const adminCommentValue = lesson.comments?.trim() ?? "";
+  const adminComment =
+    adminCommentValue && adminCommentValue !== "-" ? adminCommentValue : "";
 
   const userQuery = useQuery({
     queryKey: ["telegramUser", lesson.telegramUserId],
@@ -51,7 +56,6 @@ export default function LessonItem({
     enabled: showAdminDetails && Boolean(lesson.telegramUserId),
     initialData: adminUser ?? undefined,
   });
-  console.log(userQuery.data)
   const customerName = userQuery.data?.fullName ?? t("common.notSpecified");
 
   return (
@@ -93,7 +97,24 @@ export default function LessonItem({
         </div>
       )}
 
+      {showAdminDetails && adminComment ? (
+        <div className={css.commentBlock}>
+          <span className={css.commentLabel}>{t("adminBooking.commentsLabel")}</span>
+          <p className={css.commentText}>{adminComment}</p>
+        </div>
+      ) : null}
+
       <div className={css.footer}>
+        {showAdminDetails && onEdit ? (
+          <button
+            type="button"
+            className={css.editBtn}
+            onClick={() => onEdit(lesson)}
+            aria-label={t("lessons.editBooking")}
+          >
+            {t("lessons.edit")}
+          </button>
+        ) : null}
         <button
           type="button"
           className={css.cancelBtn}

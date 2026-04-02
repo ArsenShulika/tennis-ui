@@ -126,6 +126,13 @@ export const messages = {
       phone: "Телефон",
       cancelBooking: "Скасувати бронювання",
       cancel: "Скасувати",
+      editBooking: "Редагувати бронювання",
+      editSubtitle: "Оновіть дату, час, клієнта, локацію та інші параметри уроку.",
+      edit: "Редагувати",
+      save: "Зберегти",
+      updateError: "Не вдалося оновити урок.",
+      editLoadUsersError: "Не вдалося завантажити список клієнтів для редагування.",
+      editValidation: "Оберіть клієнта, дату та час.",
     },
     adminLessons: {
       title: "Пошук тренувань",
@@ -351,6 +358,14 @@ export const messages = {
       phone: "Phone",
       cancelBooking: "Cancel booking",
       cancel: "Cancel",
+      editBooking: "Edit booking",
+      editSubtitle:
+        "Update the date, time, client, location, and any other lesson details.",
+      edit: "Edit",
+      save: "Save",
+      updateError: "Failed to update the lesson.",
+      editLoadUsersError: "Failed to load clients for editing.",
+      editValidation: "Choose a client, date, and time.",
     },
     adminLessons: {
       title: "Lessons Search",

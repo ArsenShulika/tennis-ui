@@ -138,6 +138,35 @@ export default function LessonsList() {
     }
   };
 
+  const handleUpdate = async (updatedLesson: Lesson) => {
+    setLessons((current) =>
+      current
+        .map((lesson) => (lesson._id === updatedLesson._id ? updatedLesson : lesson))
+        .sort(
+          (a, b) =>
+            (parseLessonStart(a)?.getTime() ?? 0) -
+            (parseLessonStart(b)?.getTime() ?? 0)
+        )
+    );
+
+    if (!isAdmin || usersByTelegramId[updatedLesson.telegramUserId]) {
+      return;
+    }
+
+    try {
+      const user = await getUserByTelegramId(updatedLesson.telegramUserId);
+      setUsersByTelegramId((current) => ({
+        ...current,
+        [updatedLesson.telegramUserId]: user,
+      }));
+    } catch (loadUserError) {
+      console.error(
+        `Failed to load updated user by telegram id ${updatedLesson.telegramUserId}:`,
+        loadUserError
+      );
+    }
+  };
+
   return (
     <section>
       <div className={css.header}>
@@ -151,6 +180,7 @@ export default function LessonsList() {
             usersByTelegramId={usersByTelegramId}
             deletingLessonId={deletingLessonId}
             onDelete={handleDelete}
+            onUpdate={handleUpdate}
             locationLabels={LOCATION_LABELS}
             typeLabels={typeLabels}
             durationLabels={durationLabels}

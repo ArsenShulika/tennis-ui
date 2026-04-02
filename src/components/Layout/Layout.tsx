@@ -1,5 +1,5 @@
 import { ReactNode, Suspense } from "react";
-import Footer from "../customComponents/Footer/Footer";
+// import Footer from "../customComponents/Footer/Footer";
 import Header from "../customComponents/Header/Header";
 import css from "./Layout.module.css";
 
@@ -12,7 +12,7 @@ const Layout = ({ children }: { children: ReactNode }) => {
           <Suspense fallback={<></>}>{children}</Suspense>
         </div>
       </main>
-      <Footer />
+      {/* <Footer /> */}
     </div>
   );
 };

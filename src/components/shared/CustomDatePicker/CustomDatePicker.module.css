@@ -6,7 +6,7 @@
 .trigger {
   width: 100%;
   min-height: 56px;
-  padding: 0 18px;
+  padding: 12px 18px;
   border: 1px solid #c5d0dd;
   border-radius: 22px;
   background:
@@ -29,10 +29,14 @@
 }
 
 .triggerLabel {
+  display: block;
+  width: 100%;
   font-size: 1.05rem;
   font-weight: 700;
   line-height: 1.2;
   color: inherit;
+  white-space: normal;
+  overflow-wrap: anywhere;
 }
 
 .popover {
@@ -149,7 +153,7 @@
 @media (max-width: 640px) {
   .trigger {
     min-height: 52px;
-    padding: 0 16px;
+    padding: 10px 16px;
     border-radius: 18px;
   }
 

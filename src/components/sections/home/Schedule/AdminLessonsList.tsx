@@ -1,7 +1,8 @@
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { useLanguage } from "../../../../hooks/useLanguage";
 import { Lesson } from "../../../../types/lesson";
 import { User } from "../../../../types/user";
+import EditLessonModal from "../../lessons/EditLessonModal/EditLessonModal";
 import LessonItem from "../../lessons/LessonItem/LessonItem";
 import css from "./LessonsList.module.css";
 import { formatLessonDateLabel, parseLessonStart } from "./lessonDate";
@@ -11,6 +12,7 @@ type Props = {
   usersByTelegramId: Record<string, User | null>;
   deletingLessonId: string;
   onDelete: (lesson: Lesson) => void;
+  onUpdate: (lesson: Lesson) => void;
   locationLabels: Record<Lesson["location"], string>;
   typeLabels: Record<Lesson["typeOfLesson"], string>;
   durationLabels: Record<Lesson["duration"], string>;
@@ -21,11 +23,13 @@ export default function AdminLessonsList({
   usersByTelegramId,
   deletingLessonId,
   onDelete,
+  onUpdate,
   locationLabels,
   typeLabels,
   durationLabels,
 }: Props) {
   const { locale } = useLanguage();
+  const [editingLesson, setEditingLesson] = useState<Lesson | null>(null);
 
   const groupedLessons = useMemo(() => {
     const groups: Array<{ key: string; label: string; lessons: Lesson[] }> = [];
@@ -67,12 +71,21 @@ export default function AdminLessonsList({
                 showAdminDetails
                 isDeleting={deletingLessonId === lesson._id}
                 onCancel={onDelete}
+                onEdit={setEditingLesson}
                 showDate={false}
               />
             ))}
           </ul>
         </section>
       ))}
+
+      {editingLesson ? (
+        <EditLessonModal
+          lesson={editingLesson}
+          onClose={() => setEditingLesson(null)}
+          onSaved={onUpdate}
+        />
+      ) : null}
     </div>
   );
 }

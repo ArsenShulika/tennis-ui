@@ -44,6 +44,11 @@ export const createLesson = async (lesson: NewLesson) => {
   return result.data;
 };
 
+export const updateLesson = async (lessonId: string, lesson: NewLesson) => {
+  const result = await serverApi.patch<Lesson>(`/lessons/${lessonId}`, lesson);
+  return result.data;
+};
+
 export const deleteLesson = async (lessonId: string) => {
   await serverApi.delete(`/lessons/${lessonId}`);
 };

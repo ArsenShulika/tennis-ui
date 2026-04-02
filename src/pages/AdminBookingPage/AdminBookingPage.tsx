@@ -57,7 +57,6 @@ export default function AdminBookingPage() {
   const [success, setSuccess] = useState("");
   const [selectedUserId, setSelectedUserId] = useState("");
   const [userQuery, setUserQuery] = useState("");
-  const [pendingDate, setPendingDate] = useState("");
   const [selectedDates, setSelectedDates] = useState<string[]>([]);
   const [time, setTime] = useState("");
   const [location, setLocation] = useState<LessonLocation>("awf");
@@ -150,17 +149,6 @@ export default function AdminBookingPage() {
   );
   const minDate = useMemo(() => formatDateInputValue(new Date()), []);
 
-  const handleAddDate = () => {
-    if (!pendingDate) return;
-
-    setSelectedDates((current) =>
-      current.includes(pendingDate) ? current : [...current, pendingDate]
-    );
-    setPendingDate("");
-    setError("");
-    setSuccess("");
-  };
-
   const handleRemoveDate = (dateValue: string) => {
     setSelectedDates((current) => current.filter((item) => item !== dateValue));
   };
@@ -210,7 +198,6 @@ export default function AdminBookingPage() {
       const failedCount = results.length - createdCount;
       if (createdCount > 0) {
         setSelectedDates([]);
-        setPendingDate("");
         setTime("");
         setLocation("awf");
         setDuration("m60");
@@ -293,19 +280,19 @@ export default function AdminBookingPage() {
         <label htmlFor="admin-booking-date" className={css.label}>
           {t("adminBooking.dateLabel")}
         </label>
-        <div className={css.dateRow}>
-          <div className={css.selectField}>
-            <CustomDatePicker
-              id="admin-booking-date"
-              value={pendingDate}
-              onChange={setPendingDate}
-              minDate={minDate}
-              label={t("adminBooking.dateLabel")}
-            />
-          </div>
-          <button type="button" className={css.secondaryButton} onClick={handleAddDate}>
-            {t("adminBooking.addDate")}
-          </button>
+        <div className={css.selectField}>
+          <CustomDatePicker
+            id="admin-booking-date"
+            selectionMode="multiple"
+            selectedDates={selectedDates}
+            onSelectedDatesChange={(dates) => {
+              setSelectedDates(dates);
+              setError("");
+              setSuccess("");
+            }}
+            minDate={minDate}
+            label={t("adminBooking.dateLabel")}
+          />
         </div>
 
         {sortedSelectedDates.length > 0 ? (
