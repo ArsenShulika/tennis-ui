@@ -1,5 +1,7 @@
 import type { MouseEvent } from "react";
 import { useLanguage } from "../../../../hooks/useLanguage";
+import awfImage from "../../../../images/AWF.webp";
+import gemImage from "../../../../images/GEM.jpeg";
 import css from "./LocationsList.module.css";
 
 type Location = {
@@ -16,16 +18,14 @@ const data: Location[] = [
     name: "Hala tenisowa AWF Wrocław",
     address: "al. Ignacego Jana Paderewskiego 41, 51-612 Wrocław",
     mapQuery: "al. Ignacego Jana Paderewskiego 41, 51-612 Wrocław",
-    image:
-      "https://lh3.googleusercontent.com/gps-cs-s/AHVAweoci4YQZoMS-QVh3ljIb0fuGuombh2p2Ov90yxl1lJdUenV83h-bTrgjK2F004nJWuCaSJ_bLGdviHSy8A4YUBZj3s67xweR0Te2JkEj_7AE1A05MDq3D3enfdrHvzfSV0gVMk=w408-h306-k-no",
+    image: awfImage,
   },
   {
     id: "gem",
     name: 'Hala Tenisowa i Wielofunkcyjna Hotel GEM (Klub Sportowy "AZS" Wrocław)',
     address: "Józefa Mianowskiego 2B, 51-605 Wrocław",
     mapQuery: "Józefa Mianowskiego 2B, 51-605 Wrocław",
-    image:
-      "https://lh3.googleusercontent.com/gps-cs-s/AHVAwepjGOqXOhESziqba8IonijZ-iDshM8ZMrOTfB25eVOFgQHXHUfwn07VPPcDYoYT_hGn-ixalpGBdTSh8Tvy0u9j2-jHQdtwlaP9RzJvPP9w5Zx6T_CKZcGv-cAmg_6aalNwgMzr=w408-h272-k-no",
+    image: gemImage,
   },
   {
     id: "morskie-oko",
