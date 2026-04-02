@@ -15,6 +15,8 @@ interface TelegramWebApp {
     user?: TelegramWebAppUser;
   };
   ready?: () => void;
+  expand?: () => void;
+  requestFullscreen?: () => void;
   openLink?: (url: string) => void;
 }
 

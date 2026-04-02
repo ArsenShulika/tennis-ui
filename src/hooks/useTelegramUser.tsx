@@ -87,7 +87,16 @@ export function TelegramUserProvider({ children }: { children: ReactNode }) {
   const [isUserSyncing, setIsUserSyncing] = useState(false);
 
   useEffect(() => {
-    window.Telegram?.WebApp?.ready?.();
+    const webApp = window.Telegram?.WebApp;
+    webApp?.ready?.();
+    webApp?.expand?.();
+
+    try {
+      webApp?.requestFullscreen?.();
+    } catch (error) {
+      console.warn("Failed to request Telegram WebApp fullscreen:", error);
+    }
+
     setState(resolveTelegramUser());
   }, []);
 
