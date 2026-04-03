@@ -78,6 +78,7 @@ export default function LessonItem({
         <div className={css.compactBody}>
           <div className={css.compactMain}>
             <h3 className={css.hall}>{hallLabel}</h3>
+            <p className={css.courtInline}>{`Court ${lesson.court ?? "-"}`}</p>
             <p className={css.customerName}>{customerName}</p>
           </div>
           <div className={css.compactMeta}>
@@ -93,6 +94,7 @@ export default function LessonItem({
           </div>
           <div className={css.lessonMeta}>
             <span className={css.typeText}>{typeLabel}</span>
+            {lesson.court ? <span className={css.courtText}>{`Court ${lesson.court}`}</span> : null}
           </div>
         </div>
       )}

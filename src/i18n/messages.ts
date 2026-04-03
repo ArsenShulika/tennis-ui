@@ -303,7 +303,7 @@ export const messages = {
       pastTimeError: "You cannot book a time in the past.",
       lessonTypes: {
         individual: "Individual lesson",
-        split: "Split lesson (for two)",
+        split: "Training for two",
       },
     },
     admin: {
@@ -351,7 +351,7 @@ export const messages = {
       deleteError: "Failed to delete the booking.",
       types: {
         individual: "Individual",
-        split: "Split",
+        split: "For two",
       },
       customerData: "Customer data",
       fullName: "Name",

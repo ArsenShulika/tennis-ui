@@ -11,6 +11,7 @@ type GetAllHouursParams = {
 
 interface CreateHourBody {
   location: string;
+  court?: number;
   duration: number;
   date: string;
 }

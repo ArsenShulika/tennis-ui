@@ -149,6 +149,13 @@
   font-weight: 600;
 }
 
+.courtInline {
+  margin: 0;
+  color: #64748b;
+  font-size: 0.88rem;
+  font-weight: 600;
+}
+
 .discountBadge {
   display: inline-flex;
   align-items: center;
@@ -210,6 +217,10 @@
 
 .typeText {
   color: #4f6fa8;
+}
+
+.courtText {
+  color: #64748b;
 }
 
 .footer {

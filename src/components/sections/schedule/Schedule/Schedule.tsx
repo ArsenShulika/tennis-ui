@@ -1,6 +1,8 @@
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { GetFreeHours } from "../../../../api/freeHours";
+import { hydrateFreeHoursCourts } from "../../../../helpers/freeHourCourts";
+import { hydrateLessonsCourts } from "../../../../helpers/lessonCourts";
 import { useLanguage } from "../../../../hooks/useLanguage";
 import { GetAllLessons } from "../../../../api/lessonsapi";
 import { FreeHour } from "../../../../types/freeHour";
@@ -11,6 +13,7 @@ type SlotStatus = "busy" | "free" | "booked";
 type SlotCell = {
   status: SlotStatus;
   location?: LessonLocation;
+  court?: number;
   multisport?: boolean;
 };
 type ScheduleGrid = Record<string, Record<string, SlotCell>>;
@@ -146,6 +149,7 @@ function applyIntervalToGrid(
   slotTimes: string[],
   status: Exclude<SlotStatus, "busy">,
   location: LessonLocation,
+  court?: number,
   multisport = false
 ) {
   const end = new Date(start.getTime() + durationMinutes * 60 * 1000);
@@ -159,6 +163,7 @@ function applyIntervalToGrid(
         grid[dateKey][slotTime] = {
           status,
           location,
+          court,
           multisport: status === "booked" ? multisport : false,
         };
       }
@@ -170,7 +175,15 @@ function addFreeHourToGrid(grid: ScheduleGrid, freeHour: FreeHour, slotTimes: st
   const start = parseServerDateTime(freeHour.date);
   if (!start) return;
 
-  applyIntervalToGrid(grid, start, freeHour.duration, slotTimes, "free", freeHour.location);
+  applyIntervalToGrid(
+    grid,
+    start,
+    freeHour.duration,
+    slotTimes,
+    "free",
+    freeHour.location,
+    freeHour.court
+  );
 }
 
 function addLessonToGrid(grid: ScheduleGrid, lesson: Lesson, slotTimes: string[]) {
@@ -184,6 +197,7 @@ function addLessonToGrid(grid: ScheduleGrid, lesson: Lesson, slotTimes: string[]
     slotTimes,
     "booked",
     lesson.location,
+    lesson.court,
     lesson.multisport
   );
 }
@@ -283,14 +297,16 @@ export default function Schedule({ mode = "user", onAdminSlotSelect }: ScheduleP
           GetFreeHours({ fromDate, toDate }),
           GetAllLessons({ fromDate, toDate }),
         ]);
+        const hydratedFreeHours = hydrateFreeHoursCourts(freeHoursResponse.freeHours);
 
+        const hydratedLessons = hydrateLessonsCourts(lessonsResponse.lessons);
         const nextGrid = createBlockedWeekGrid(week);
 
-        freeHoursResponse.freeHours.forEach((freeHour) => {
+        hydratedFreeHours.forEach((freeHour) => {
           addFreeHourToGrid(nextGrid, freeHour, timeSlots);
         });
 
-        lessonsResponse.lessons.forEach((lesson) => {
+        hydratedLessons.forEach((lesson) => {
           addLessonToGrid(nextGrid, lesson, timeSlots);
         });
 
@@ -306,13 +322,19 @@ export default function Schedule({ mode = "user", onAdminSlotSelect }: ScheduleP
     loadSchedule();
   }, [week]);
 
-  const handleFreeSlotSelect = (dateKey: string, time: string, location?: LessonLocation) => {
+  const handleFreeSlotSelect = (
+    dateKey: string,
+    time: string,
+    location?: LessonLocation,
+    court?: number
+  ) => {
     if (!location) return;
 
     const searchParams = new URLSearchParams({
       date: dateKey,
       time,
       location,
+      ...(court ? { court: String(court) } : {}),
     });
 
     navigate(`/booking?${searchParams.toString()}`);
@@ -435,7 +457,7 @@ export default function Schedule({ mode = "user", onAdminSlotSelect }: ScheduleP
                         aria-label={label}
                         onClick={() => {
                           if (isBookableFreeSlot) {
-                            handleFreeSlotSelect(key, tValue, cell.location);
+                            handleFreeSlotSelect(key, tValue, cell.location, cell.court);
                           }
 
                           if (isAdminOpenableBusySlot) {

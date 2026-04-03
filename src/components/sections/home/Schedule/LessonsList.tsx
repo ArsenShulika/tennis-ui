@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { deleteLesson, GetAllLessons } from "../../../../api/lessonsapi";
+import { hydrateLessonsCourts, removeLessonCourt } from "../../../../helpers/lessonCourts";
 import { getUserByTelegramId } from "../../../../api/usersapi";
 import { useLanguage } from "../../../../hooks/useLanguage";
 import { useTelegramUser } from "../../../../hooks/useTelegramUser";
@@ -61,7 +62,7 @@ export default function LessonsList() {
         const response = await GetAllLessons(
           isAdmin ? {} : { telegramUserId: telegramUserId ?? undefined }
         );
-        const sortedLessons = [...response.lessons].sort(
+        const sortedLessons = [...hydrateLessonsCourts(response.lessons)].sort(
           (a, b) =>
             (parseLessonStart(a)?.getTime() ?? 0) -
             (parseLessonStart(b)?.getTime() ?? 0)
@@ -127,6 +128,13 @@ export default function LessonsList() {
       setDeletingLessonId(lesson._id);
       setError("");
       await deleteLesson(lesson._id);
+      removeLessonCourt({
+        date: lesson.date,
+        time: lesson.time,
+        location: lesson.location,
+        duration: lesson.duration,
+        telegramUserId: lesson.telegramUserId,
+      });
       setLessons((current) =>
         current.filter((item) => item._id !== lesson._id)
       );

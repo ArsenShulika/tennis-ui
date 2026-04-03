@@ -6,6 +6,7 @@ export interface Lesson {
   _id: string;
   date: string;
   location: LessonLocation;
+  court?: number;
   duration: LessonDuration;
   time: string;
   typeOfLesson: LessonType;
@@ -19,6 +20,7 @@ export interface Lesson {
 export interface NewLesson {
   date?: string;
   location?: LessonLocation;
+  court?: number;
   duration?: LessonDuration;
   time?: string;
   typeOfLesson?: LessonType;

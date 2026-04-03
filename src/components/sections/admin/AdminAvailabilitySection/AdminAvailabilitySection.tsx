@@ -1,6 +1,13 @@
 import { FormEvent, useEffect, useMemo, useRef, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import { createFreeHour, deleteFreeHour, GetFreeHours } from "../../../../api/freeHours";
+import { COURT_OPTIONS } from "../../../../constants/courts";
+import {
+  hydrateFreeHoursCourts,
+  removeFreeHourCourt,
+  saveFreeHourCourt,
+} from "../../../../helpers/freeHourCourts";
+import { hydrateLessonsCourts } from "../../../../helpers/lessonCourts";
 import { GetAllLessons } from "../../../../api/lessonsapi";
 import CustomDatePicker from "../../../shared/CustomDatePicker/CustomDatePicker";
 import CustomDropdownSelect from "../../../shared/CustomDropdownSelect/CustomDropdownSelect";
@@ -136,6 +143,7 @@ export default function AdminAvailabilitySection() {
   const [date, setDate] = useState("");
   const [time, setTime] = useState("");
   const [location, setLocation] = useState<LessonLocation>("awf");
+  const [court, setCourt] = useState("1");
   const [duration, setDuration] = useState(String(MIN_LESSON_MINUTES));
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [message, setMessage] = useState("");
@@ -257,8 +265,8 @@ export default function AdminAvailabilitySection() {
         }),
       ]);
 
-      setFreeHours(sortFreeHours(freeHoursResponse.freeHours));
-      setFutureLessons(lessonsResponse.lessons);
+      setFreeHours(sortFreeHours(hydrateFreeHoursCourts(freeHoursResponse.freeHours)));
+      setFutureLessons(hydrateLessonsCourts(lessonsResponse.lessons));
     } catch (loadError) {
       console.error("Failed to load admin data:", loadError);
       setListError(t("admin.loadListError"));
@@ -360,8 +368,16 @@ export default function AdminAvailabilitySection() {
     setMessage("");
 
     try {
+      saveFreeHourCourt({
+        date: `${date}T${time}:00`,
+        location,
+        duration: Number(duration),
+        court: Number(court),
+      });
+
       await createFreeHour({
         location,
+        court: Number(court),
         duration: Number(duration),
         date: `${date}T${time}:00`,
       });
@@ -370,6 +386,7 @@ export default function AdminAvailabilitySection() {
       setDate("");
       setTime("");
       setLocation("awf");
+      setCourt("1");
       setDuration(String(MIN_LESSON_MINUTES));
       await loadAdminData();
     } catch (submitError) {
@@ -388,6 +405,11 @@ export default function AdminAvailabilitySection() {
       setDeletingId(freeHour._id);
       setListError("");
       await deleteFreeHour(freeHour._id);
+      removeFreeHourCourt({
+        date: freeHour.date,
+        location: freeHour.location,
+        duration: freeHour.duration,
+      });
       setFreeHours((current) => current.filter((item) => item._id !== freeHour._id));
     } catch (deleteError) {
       console.error("Failed to delete free hour:", deleteError);
@@ -446,6 +468,20 @@ export default function AdminAvailabilitySection() {
           />
         </div>
 
+        <label htmlFor="free-hour-court" className={css.label}>
+          Court:
+        </label>
+        <div className={css.selectField}>
+          <CustomDropdownSelect
+            id="free-hour-court"
+            value={court}
+            placeholder="Choose court"
+            options={COURT_OPTIONS}
+            onChange={setCourt}
+            emptyText="No available courts"
+          />
+        </div>
+
         <label htmlFor="free-hour-duration" className={css.label}>
           {t("common.duration")}:
         </label>
@@ -487,11 +523,12 @@ export default function AdminAvailabilitySection() {
                 <li key={freeHour._id} className={css.freeHourItem}>
                   <div className={css.freeHourMeta}>
                     <span className={css.freeHourPrimary}>
-                      {formatDatePart(freeHour.date)} • {formatTimePart(freeHour.date)}
+                      {formatDatePart(freeHour.date)} {" | "} {formatTimePart(freeHour.date)}
                     </span>
                     <span className={css.freeHourSecondary}>
-                      {locationLabels[freeHour.location]} • {freeHour.duration}{" "}
-                      {t("common.minutesShort")}
+                      {locationLabels[freeHour.location]}
+                      {` | Court ${freeHour.court ?? "-"}`}
+                      {` | ${freeHour.duration} ${t("common.minutesShort")}`}
                     </span>
                   </div>
                   <button

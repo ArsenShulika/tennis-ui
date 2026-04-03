@@ -2,7 +2,8 @@ import { LessonLocation } from "./lesson";
 
 export interface FreeHour {
   _id: string;
-  date: string; //дата та час початку
+  date: string;
   location: LessonLocation;
-  duration: number;   //тривалість в хвилинах
+  court: number;
+  duration: number;
 }

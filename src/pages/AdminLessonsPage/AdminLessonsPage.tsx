@@ -5,6 +5,7 @@ import AdminLessonsList from "../../components/sections/home/Schedule/AdminLesso
 import { parseLessonStart } from "../../components/sections/home/Schedule/lessonDate";
 import CustomDatePicker from "../../components/shared/CustomDatePicker/CustomDatePicker";
 import CustomDropdownSelect from "../../components/shared/CustomDropdownSelect/CustomDropdownSelect";
+import { hydrateLessonsCourts, removeLessonCourt } from "../../helpers/lessonCourts";
 import { useLanguage } from "../../hooks/useLanguage";
 import { Lesson, LessonLocation, LessonType } from "../../types/lesson";
 import { User } from "../../types/user";
@@ -106,7 +107,7 @@ export default function AdminLessonsPage() {
         setError("");
 
         const response = await GetAllLessons({ perPage: 500 });
-        const sortedLessons = [...response.lessons].sort(
+        const sortedLessons = [...hydrateLessonsCourts(response.lessons)].sort(
           (a, b) =>
             (parseLessonStart(a)?.getTime() ?? 0) - (parseLessonStart(b)?.getTime() ?? 0)
         );
@@ -248,6 +249,13 @@ export default function AdminLessonsPage() {
       setDeletingLessonId(lesson._id);
       setError("");
       await deleteLesson(lesson._id);
+      removeLessonCourt({
+        date: lesson.date,
+        time: lesson.time,
+        location: lesson.location,
+        duration: lesson.duration,
+        telegramUserId: lesson.telegramUserId,
+      });
       setLessons((current) => current.filter((item) => item._id !== lesson._id));
     } catch (deleteError) {
       console.error("Failed to delete lesson:", deleteError);

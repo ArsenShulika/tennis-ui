@@ -1,6 +1,8 @@
 import { useEffect, useMemo, useState } from "react";
 import { updateLesson } from "../../../../api/lessonsapi";
 import { getAllUsers } from "../../../../api/usersapi";
+import { COURT_OPTIONS } from "../../../../constants/courts";
+import { saveLessonCourt } from "../../../../helpers/lessonCourts";
 import CustomDatePicker from "../../../shared/CustomDatePicker/CustomDatePicker";
 import CustomDropdownSelect from "../../../shared/CustomDropdownSelect/CustomDropdownSelect";
 import { useLanguage } from "../../../../hooks/useLanguage";
@@ -20,6 +22,7 @@ type DraftLesson = {
   date: string;
   time: string;
   location: LessonLocation;
+  court: string;
   duration: LessonDuration;
   typeOfLesson: LessonType;
   multisport: boolean;
@@ -48,6 +51,7 @@ function createDraft(lesson: Lesson): DraftLesson {
     date: lessonStart ? formatDateInputValue(lessonStart) : lesson.date.slice(0, 10),
     time: lesson.time,
     location: lesson.location,
+    court: String(lesson.court ?? 1),
     duration: lesson.duration,
     typeOfLesson: lesson.typeOfLesson,
     multisport: lesson.multisport,
@@ -173,18 +177,31 @@ export default function EditLessonModal({ lesson, onClose, onSaved }: Props) {
       setError("");
 
       const trimmedComments = draft.comments.trim();
+      saveLessonCourt({
+        date: `${draft.date} ${draft.time}`,
+        time: draft.time,
+        location: draft.location,
+        duration: draft.duration,
+        telegramUserId: draft.telegramUserId,
+        court: Number(draft.court),
+      });
+
       const updatedLesson = await updateLesson(lesson._id, {
         telegramUserId: draft.telegramUserId,
         date: `${draft.date} ${draft.time}`,
         time: draft.time,
         location: draft.location,
+        court: Number(draft.court),
         duration: draft.duration,
         typeOfLesson: draft.typeOfLesson,
         multisport: draft.multisport,
         comments: trimmedComments || "-",
       });
 
-      onSaved(updatedLesson);
+      onSaved({
+        ...updatedLesson,
+        court: updatedLesson.court ?? Number(draft.court),
+      });
       onClose();
     } catch (saveError) {
       console.error("Failed to update lesson:", saveError);
@@ -264,6 +281,20 @@ export default function EditLessonModal({ lesson, onClose, onSaved }: Props) {
                 onChange={(value) => handleDraftChange("location", value as LessonLocation)}
                 options={locationOptions}
                 placeholder={t("adminBooking.chooseLocation")}
+              />
+            </div>
+          </label>
+
+          <label className={css.field}>
+            <span className={css.label}>Court</span>
+            <div className={css.control}>
+              <CustomDropdownSelect
+                id="edit-lesson-court"
+                value={draft.court}
+                onChange={(value) => handleDraftChange("court", value)}
+                options={COURT_OPTIONS}
+                placeholder="Choose court"
+                emptyText="No available courts"
               />
             </div>
           </label>

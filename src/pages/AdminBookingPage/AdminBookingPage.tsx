@@ -3,6 +3,8 @@ import { createLesson } from "../../api/lessonsapi";
 import { getAllUsers } from "../../api/usersapi";
 import CustomDatePicker from "../../components/shared/CustomDatePicker/CustomDatePicker";
 import CustomDropdownSelect from "../../components/shared/CustomDropdownSelect/CustomDropdownSelect";
+import { COURT_OPTIONS } from "../../constants/courts";
+import { saveLessonCourt } from "../../helpers/lessonCourts";
 import { useLanguage } from "../../hooks/useLanguage";
 import { LessonDuration, LessonLocation, LessonType, NewLesson } from "../../types/lesson";
 import { User } from "../../types/user";
@@ -60,6 +62,7 @@ export default function AdminBookingPage() {
   const [selectedDates, setSelectedDates] = useState<string[]>([]);
   const [time, setTime] = useState("");
   const [location, setLocation] = useState<LessonLocation>("awf");
+  const [court, setCourt] = useState("1");
   const [duration, setDuration] = useState<LessonDuration>("m60");
   const [typeOfLesson, setTypeOfLesson] = useState<LessonType>("individual");
   const [multisport, setMultisport] = useState(false);
@@ -184,12 +187,24 @@ export default function AdminBookingPage() {
         date: `${dateValue} ${time}`,
         time,
         location,
+        court: Number(court),
         duration,
         typeOfLesson,
         multisport,
         telegramUserId: selectedUser.telegramUserId,
         ...(trimmedComments ? { comments: trimmedComments } : {}),
       }));
+
+      lessonsToCreate.forEach((lesson) => {
+        saveLessonCourt({
+          date: lesson.date ?? "",
+          time: lesson.time,
+          location: lesson.location ?? "awf",
+          duration: lesson.duration ?? "m60",
+          telegramUserId: lesson.telegramUserId,
+          court: lesson.court ?? 1,
+        });
+      });
 
       const results = await Promise.allSettled(
         lessonsToCreate.map((lesson) => createLesson(lesson))
@@ -200,6 +215,7 @@ export default function AdminBookingPage() {
         setSelectedDates([]);
         setTime("");
         setLocation("awf");
+        setCourt("1");
         setDuration("m60");
         setTypeOfLesson("individual");
         setMultisport(false);
@@ -340,6 +356,20 @@ export default function AdminBookingPage() {
             onChange={(value) => setLocation(value as LessonLocation)}
             options={locationOptions}
             placeholder={t("adminBooking.chooseLocation")}
+          />
+        </div>
+
+        <label htmlFor="admin-booking-court" className={css.label}>
+          Court
+        </label>
+        <div className={css.selectField}>
+          <CustomDropdownSelect
+            id="admin-booking-court"
+            value={court}
+            onChange={setCourt}
+            options={COURT_OPTIONS}
+            placeholder="Choose court"
+            emptyText="No available courts"
           />
         </div>
 

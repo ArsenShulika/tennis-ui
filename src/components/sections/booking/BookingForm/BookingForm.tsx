@@ -2,6 +2,8 @@ import { FormEvent, useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import { GetFreeHours } from "../../../../api/freeHours";
 import { createLesson, GetAllLessons } from "../../../../api/lessonsapi";
+import { hydrateFreeHoursCourts } from "../../../../helpers/freeHourCourts";
+import { hydrateLessonsCourts, saveLessonCourt } from "../../../../helpers/lessonCourts";
 import { useLanguage } from "../../../../hooks/useLanguage";
 import { useTelegramUser } from "../../../../hooks/useTelegramUser";
 import { FreeHour } from "../../../../types/freeHour";
@@ -17,11 +19,12 @@ import CustomDropdownSelect from "../../../shared/CustomDropdownSelect/CustomDro
 import css from "./BookingForm.module.css";
 
 type SlotStatus = "busy" | "free" | "booked";
-type DayGrid = Record<LessonLocation, Record<string, SlotStatus>>;
+type DayGrid = Record<string, Record<string, SlotStatus>>;
 type BookingSlot = {
   value: string;
   time: string;
   location: LessonLocation;
+  court?: number;
   availableMinutes: number;
 };
 
@@ -100,29 +103,58 @@ function createDayRange(date: string) {
   };
 }
 
-function createBlockedDayGrid(): DayGrid {
+function getResourceKey(location: LessonLocation, court?: number) {
+  return `${location}|${court ?? 1}`;
+}
+
+function parseResourceKey(resourceKey: string) {
+  const [location, courtValue] = resourceKey.split("|");
+
   return {
-    awf: Object.fromEntries(TIME_SLOTS.map((slot) => [slot, "busy" as const])),
-    gem: Object.fromEntries(TIME_SLOTS.map((slot) => [slot, "busy" as const])),
-    oko: Object.fromEntries(TIME_SLOTS.map((slot) => [slot, "busy" as const])),
+    location: location as LessonLocation,
+    court: Number(courtValue),
   };
+}
+
+function ensureResourceGrid(grid: DayGrid, resourceKey: string) {
+  if (!grid[resourceKey]) {
+    grid[resourceKey] = Object.fromEntries(TIME_SLOTS.map((slot) => [slot, "busy" as const]));
+  }
+}
+
+function createBlockedDayGrid(freeHours: FreeHour[], lessons: Lesson[]): DayGrid {
+  const grid: DayGrid = {};
+
+  freeHours.forEach((freeHour) => {
+    ensureResourceGrid(grid, getResourceKey(freeHour.location, freeHour.court));
+  });
+
+  lessons.forEach((lesson) => {
+    ensureResourceGrid(grid, getResourceKey(lesson.location, lesson.court));
+  });
+
+  return grid;
 }
 
 function applyIntervalToDayGrid(
   grid: DayGrid,
   location: LessonLocation,
+  court: number | undefined,
   start: Date,
   durationMinutes: number,
   status: Exclude<SlotStatus, "busy">
 ) {
   const end = new Date(start.getTime() + durationMinutes * 60 * 1000);
+  const resourceKey = getResourceKey(location, court);
+
+  ensureResourceGrid(grid, resourceKey);
 
   TIME_SLOTS.forEach((slotTime) => {
     const slotStart = createSlotDate(formatDate(start), slotTime);
     const slotEnd = new Date(slotStart.getTime() + 30 * 60 * 1000);
 
     if (slotStart < end && slotEnd > start) {
-      grid[location][slotTime] = status;
+      grid[resourceKey][slotTime] = status;
     }
   });
 }
@@ -131,7 +163,7 @@ function addFreeHourToGrid(grid: DayGrid, freeHour: FreeHour) {
   const start = parseServerDateTime(freeHour.date);
   if (!start) return;
 
-  applyIntervalToDayGrid(grid, freeHour.location, start, freeHour.duration, "free");
+  applyIntervalToDayGrid(grid, freeHour.location, freeHour.court, start, freeHour.duration, "free");
 }
 
 function getLessonStart(lesson: Lesson) {
@@ -158,6 +190,7 @@ function addLessonToGrid(grid: DayGrid, lesson: Lesson) {
   applyIntervalToDayGrid(
     grid,
     lesson.location,
+    lesson.court,
     start,
     getLessonDurationMinutes(lesson.duration),
     "booked"
@@ -169,16 +202,18 @@ function buildBookingSlots(grid: DayGrid, selectedDate: string, durationOptions:
   const now = new Date();
   const today = formatDate(now);
 
-  (Object.keys(grid) as LessonLocation[]).forEach((location) => {
+  Object.keys(grid).forEach((resourceKey) => {
+    const { location, court } = parseResourceKey(resourceKey);
+
     TIME_SLOTS.forEach((slotTime, index) => {
-      if (grid[location][slotTime] !== "free") return;
+      if (grid[resourceKey][slotTime] !== "free") return;
 
       const slotStart = createSlotDate(selectedDate, slotTime);
       if (selectedDate === today && slotStart.getTime() < now.getTime()) return;
 
       let consecutiveSlots = 0;
       for (let cursor = index; cursor < TIME_SLOTS.length; cursor += 1) {
-        if (grid[location][TIME_SLOTS[cursor]] !== "free") break;
+        if (grid[resourceKey][TIME_SLOTS[cursor]] !== "free") break;
         consecutiveSlots += 1;
       }
 
@@ -188,9 +223,10 @@ function buildBookingSlots(grid: DayGrid, selectedDate: string, durationOptions:
       if (!hasSupportedDuration) return;
 
       result.push({
-        value: `${slotTime}|${location}`,
+        value: `${slotTime}|${location}|${court}`,
         time: slotTime,
         location,
+        court,
         availableMinutes,
       });
     });
@@ -239,8 +275,11 @@ export default function BookingForm() {
   const presetDate = searchParams.get("date") ?? "";
   const presetTime = searchParams.get("time") ?? "";
   const presetLocation = searchParams.get("location");
+  const presetCourt = searchParams.get("court");
   const presetSlotValue =
-    presetTime && isLessonLocation(presetLocation) ? `${presetTime}|${presetLocation}` : "";
+    presetTime && isLessonLocation(presetLocation)
+      ? `${presetTime}|${presetLocation}${presetCourt ? `|${presetCourt}` : ""}`
+      : "";
 
   useEffect(() => {
     if (presetDate && presetDate >= minDate) {
@@ -257,7 +296,7 @@ export default function BookingForm() {
     () =>
       availableSlots.map((slot) => ({
         value: slot.value,
-        label: `${slot.time} • ${LOCATION_LABELS[slot.location]}`,
+        label: slot.time,
       })),
     [availableSlots]
   );
@@ -267,8 +306,8 @@ export default function BookingForm() {
       selectedSlot
         ? [
             {
-              value: selectedSlot.location,
-              label: LOCATION_LABELS[selectedSlot.location],
+              value: `${selectedSlot.location}|${selectedSlot.court ?? 1}`,
+              label: `${LOCATION_LABELS[selectedSlot.location]} • Court ${selectedSlot.court ?? 1}`,
             },
           ]
         : [],
@@ -320,13 +359,17 @@ export default function BookingForm() {
           GetAllLessons({ fromDate, toDate }),
         ]);
 
-        const nextGrid = createBlockedDayGrid();
+        const hydratedFreeHours = hydrateFreeHoursCourts(freeHoursResponse.freeHours);
 
-        freeHoursResponse.freeHours.forEach((freeHour) => {
+        const hydratedLessons = hydrateLessonsCourts(lessonsResponse.lessons);
+
+        const nextGrid = createBlockedDayGrid(hydratedFreeHours, hydratedLessons);
+
+        hydratedFreeHours.forEach((freeHour) => {
           addFreeHourToGrid(nextGrid, freeHour);
         });
 
-        lessonsResponse.lessons.forEach((lesson) => {
+        hydratedLessons.forEach((lesson) => {
           addLessonToGrid(nextGrid, lesson);
         });
 
@@ -338,7 +381,8 @@ export default function BookingForm() {
         setAvailableSlots(nextSlots);
 
         if (presetSlotValue && nextSlots.some((slot) => slot.value === presetSlotValue)) {
-          setSelectedSlotValue(presetSlotValue);
+          const matchingSlot = nextSlots.find((slot) => slot.value === presetSlotValue);
+          setSelectedSlotValue(matchingSlot?.value ?? "");
         }
       } catch (error) {
         console.error("Failed to load booking availability:", error);
@@ -375,6 +419,7 @@ export default function BookingForm() {
       date: `${date} ${selectedSlot.time}`,
       time: selectedSlot.time,
       location: selectedSlot.location,
+      court: selectedSlot.court,
       duration,
       typeOfLesson,
       multisport,
@@ -382,6 +427,14 @@ export default function BookingForm() {
     };
 
     try {
+      saveLessonCourt({
+        date: lesson.date ?? "",
+        time: lesson.time,
+        location: lesson.location ?? "awf",
+        duration: lesson.duration ?? "m60",
+        telegramUserId: lesson.telegramUserId,
+        court: lesson.court ?? 1,
+      });
       await createLesson(lesson);
       setSubmitMessage(t("booking.created"));
       setSelectedSlotValue("");
@@ -427,7 +480,7 @@ export default function BookingForm() {
       <div className={css.selectField}>
         <CustomDropdownSelect
           id="location"
-          value={selectedSlot?.location ?? ""}
+          value={selectedSlot ? `${selectedSlot.location}|${selectedSlot.court ?? 1}` : ""}
           placeholder={t("booking.autoLocation")}
           options={locationOptions}
           onChange={() => {}}
