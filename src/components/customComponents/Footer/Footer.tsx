@@ -1,11 +1,13 @@
-import { useLanguage } from "../../../hooks/useLanguage";
+import Navigation from "../Navigation/Navigation";
 import css from "./Footer.module.css";
 
 const Footer = () => {
-  const { t } = useLanguage();
-
   return (
-    <div className={css.footer}>{t("footer.label")}</div>
+    <footer className={css.footer}>
+      <div className={`container ${css.inner}`}>
+        <Navigation />
+      </div>
+    </footer>
   );
 };
 
