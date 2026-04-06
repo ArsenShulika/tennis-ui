@@ -1,3 +1,4 @@
+import { formatLocalDateTime } from "../helpers/lessonDateTime";
 import { Lesson, NewLesson } from "../types/lesson";
 import { serverApi } from "./serverconfig";
 
@@ -22,13 +23,11 @@ export const GetAllLessons = async (params: GetAllLessonsParams) => {
 
 export const GetLessonsByDay = async (date: string) => {
   const currentDate = new Date(date);
-  currentDate.setHours(0);
-  currentDate.setMinutes(0);
-  const fromDate = currentDate.toISOString();
-  currentDate.setHours(23);
-  currentDate.setMinutes(59); /* початок дня */
-  const toDate = currentDate.toISOString(); /* кінец
-  ь дня */
+  currentDate.setHours(0, 0, 0, 0);
+  const fromDate = formatLocalDateTime(currentDate);
+  currentDate.setHours(23, 59, 59, 0);
+  const toDate = formatLocalDateTime(currentDate);
+
   const result = await serverApi.get<GetAllLessonsResponse>("/lessons", {
     params: { fromDate, toDate },
   });

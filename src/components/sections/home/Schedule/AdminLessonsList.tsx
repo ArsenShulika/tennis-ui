@@ -4,6 +4,7 @@ import { Lesson } from "../../../../types/lesson";
 import { User } from "../../../../types/user";
 import EditLessonModal from "../../lessons/EditLessonModal/EditLessonModal";
 import LessonItem from "../../lessons/LessonItem/LessonItem";
+import { formatLocalDate } from "../../../../helpers/lessonDateTime";
 import css from "./LessonsList.module.css";
 import { formatLessonDateLabel, parseLessonStart } from "./lessonDate";
 
@@ -36,7 +37,7 @@ export default function AdminLessonsList({
 
     lessons.forEach((lesson) => {
       const start = parseLessonStart(lesson);
-      const key = start ? start.toISOString().slice(0, 10) : lesson.date;
+      const key = start ? formatLocalDate(start) : lesson.date.slice(0, 10);
       const lastGroup = groups[groups.length - 1];
 
       if (!lastGroup || lastGroup.key !== key) {

@@ -4,6 +4,7 @@ import { getAllUsers } from "../../api/usersapi";
 import CustomDatePicker from "../../components/shared/CustomDatePicker/CustomDatePicker";
 import CustomDropdownSelect from "../../components/shared/CustomDropdownSelect/CustomDropdownSelect";
 import { COURT_OPTIONS } from "../../constants/courts";
+import { buildLessonDateTime } from "../../helpers/lessonDateTime";
 import { saveLessonCourt } from "../../helpers/lessonCourts";
 import { useLanguage } from "../../hooks/useLanguage";
 import { LessonDuration, LessonLocation, LessonType, NewLesson } from "../../types/lesson";
@@ -184,7 +185,7 @@ export default function AdminBookingPage() {
     try {
       const trimmedComments = comments.trim();
       const lessonsToCreate: NewLesson[] = sortedSelectedDates.map((dateValue) => ({
-        date: `${dateValue} ${time}`,
+        date: buildLessonDateTime(dateValue, time),
         time,
         location,
         court: Number(court),

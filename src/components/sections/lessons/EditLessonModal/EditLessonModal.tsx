@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { updateLesson } from "../../../../api/lessonsapi";
 import { getAllUsers } from "../../../../api/usersapi";
 import { COURT_OPTIONS } from "../../../../constants/courts";
+import { buildLessonDateTime } from "../../../../helpers/lessonDateTime";
 import { saveLessonCourt } from "../../../../helpers/lessonCourts";
 import CustomDatePicker from "../../../shared/CustomDatePicker/CustomDatePicker";
 import CustomDropdownSelect from "../../../shared/CustomDropdownSelect/CustomDropdownSelect";
@@ -76,16 +77,17 @@ const TIME_OPTIONS = buildTimeOptions();
 
 export default function EditLessonModal({ lesson, onClose, onSaved }: Props) {
   const { t } = useLanguage();
-  const [draft, setDraft] = useState<DraftLesson>(() => createDraft(lesson));
+  const initialDraft = useMemo(() => createDraft(lesson), [lesson]);
+  const [draft, setDraft] = useState<DraftLesson>(initialDraft);
   const [users, setUsers] = useState<User[]>([]);
   const [isLoadingUsers, setIsLoadingUsers] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState("");
 
   useEffect(() => {
-    setDraft(createDraft(lesson));
+    setDraft(initialDraft);
     setError("");
-  }, [lesson]);
+  }, [initialDraft]);
 
   useEffect(() => {
     const loadUsers = async () => {
@@ -162,7 +164,6 @@ export default function EditLessonModal({ lesson, onClose, onSaved }: Props) {
   );
 
   const handleDraftChange = <K extends keyof DraftLesson>(field: K, value: DraftLesson[K]) => {
-    console.log(draft);
     setDraft((current) => ({ ...current, [field]: value }));
   };
 
@@ -177,8 +178,13 @@ export default function EditLessonModal({ lesson, onClose, onSaved }: Props) {
       setError("");
 
       const trimmedComments = draft.comments.trim();
+      const lessonDatePayload =
+        draft.date === initialDraft.date && draft.time === initialDraft.time
+          ? lesson.date
+          : buildLessonDateTime(draft.date, draft.time);
+
       saveLessonCourt({
-        date: `${draft.date} ${draft.time}`,
+        date: lessonDatePayload,
         time: draft.time,
         location: draft.location,
         duration: draft.duration,
@@ -188,7 +194,7 @@ export default function EditLessonModal({ lesson, onClose, onSaved }: Props) {
 
       const updatedLesson = await updateLesson(lesson._id, {
         telegramUserId: draft.telegramUserId,
-        date: `${draft.date} ${draft.time}`,
+        date: lessonDatePayload,
         time: draft.time,
         location: draft.location,
         court: Number(draft.court),

@@ -7,6 +7,7 @@ import {
   removeFreeHourCourt,
   saveFreeHourCourt,
 } from "../../../../helpers/freeHourCourts";
+import { formatLocalDateTime } from "../../../../helpers/lessonDateTime";
 import { hydrateLessonsCourts } from "../../../../helpers/lessonCourts";
 import { GetAllLessons } from "../../../../api/lessonsapi";
 import CustomDatePicker from "../../../shared/CustomDatePicker/CustomDatePicker";
@@ -252,7 +253,7 @@ export default function AdminAvailabilitySection() {
     try {
       setIsLoadingList(true);
       setListError("");
-      const fromDate = new Date().toISOString();
+      const fromDate = formatLocalDateTime(new Date());
 
       const [freeHoursResponse, lessonsResponse] = await Promise.all([
         GetFreeHours({

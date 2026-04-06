@@ -3,6 +3,7 @@ import { useSearchParams } from "react-router-dom";
 import { GetFreeHours } from "../../../../api/freeHours";
 import { createLesson, GetAllLessons } from "../../../../api/lessonsapi";
 import { hydrateFreeHoursCourts } from "../../../../helpers/freeHourCourts";
+import { buildLessonDateTime } from "../../../../helpers/lessonDateTime";
 import { hydrateLessonsCourts, saveLessonCourt } from "../../../../helpers/lessonCourts";
 import { useLanguage } from "../../../../hooks/useLanguage";
 import { useTelegramUser } from "../../../../hooks/useTelegramUser";
@@ -416,7 +417,7 @@ export default function BookingForm() {
     setSubmitMessage("");
 
     const lesson: NewLesson = {
-      date: `${date} ${selectedSlot.time}`,
+      date: buildLessonDateTime(date, selectedSlot.time),
       time: selectedSlot.time,
       location: selectedSlot.location,
       court: selectedSlot.court,
