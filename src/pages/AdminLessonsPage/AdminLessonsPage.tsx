@@ -6,6 +6,7 @@ import { parseLessonStart } from "../../components/sections/home/Schedule/lesson
 import CustomDatePicker from "../../components/shared/CustomDatePicker/CustomDatePicker";
 import CustomDropdownSelect from "../../components/shared/CustomDropdownSelect/CustomDropdownSelect";
 import { hydrateLessonsCourts, removeLessonCourt } from "../../helpers/lessonCourts";
+import { getApiErrorDetails } from "../../helpers/apiError";
 import { useLanguage } from "../../hooks/useLanguage";
 import { Lesson, LessonLocation, LessonType } from "../../types/lesson";
 import { User } from "../../types/user";
@@ -242,9 +243,6 @@ export default function AdminLessonsPage() {
   };
 
   const handleDelete = async (lesson: Lesson) => {
-    const confirmed = window.confirm(t("lessons.deleteConfirm"));
-    if (!confirmed) return;
-
     try {
       setDeletingLessonId(lesson._id);
       setError("");
@@ -258,7 +256,7 @@ export default function AdminLessonsPage() {
       });
       setLessons((current) => current.filter((item) => item._id !== lesson._id));
     } catch (deleteError) {
-      console.error("Failed to delete lesson:", deleteError);
+      console.error("Failed to delete lesson:", getApiErrorDetails(deleteError));
       setError(t("lessons.deleteError"));
     } finally {
       setDeletingLessonId("");

@@ -24,7 +24,7 @@ type BookingSlot = {
   value: string;
   time: string;
   location: LessonLocation;
-  court?: number;
+  court: number;
   availableMinutes: number;
 };
 
@@ -112,7 +112,7 @@ function parseResourceKey(resourceKey: string) {
 
   return {
     location: location as LessonLocation,
-    court: Number(courtValue),
+    court: Number(courtValue) || 1,
   };
 }
 
@@ -232,7 +232,7 @@ function buildBookingSlots(grid: DayGrid, selectedDate: string, durationOptions:
     });
   });
 
-  return result.sort((a, b) => a.value.localeCompare(b.value));
+  return result.sort((left, right) => left.value.localeCompare(right.value));
 }
 
 function isLessonLocation(value: string | null): value is LessonLocation {
@@ -253,6 +253,7 @@ export default function BookingForm() {
   const [loadError, setLoadError] = useState("");
   const [submitError, setSubmitError] = useState("");
   const [submitMessage, setSubmitMessage] = useState("");
+  const [availabilityVersion, setAvailabilityVersion] = useState(0);
   const minDate = formatDate(new Date());
 
   const durationDefinitions = useMemo(
@@ -306,8 +307,8 @@ export default function BookingForm() {
       selectedSlot
         ? [
             {
-              value: `${selectedSlot.location}|${selectedSlot.court ?? 1}`,
-              label: `${LOCATION_LABELS[selectedSlot.location]} • Court ${selectedSlot.court ?? 1}`,
+              value: `${selectedSlot.location}|${selectedSlot.court}`,
+              label: `${LOCATION_LABELS[selectedSlot.location]} | Court ${selectedSlot.court}`,
             },
           ]
         : [],
@@ -360,7 +361,6 @@ export default function BookingForm() {
         ]);
 
         const hydratedFreeHours = hydrateFreeHoursCourts(freeHoursResponse.freeHours);
-
         const hydratedLessons = hydrateLessonsCourts(lessonsResponse.lessons);
 
         const nextGrid = createBlockedDayGrid(hydratedFreeHours, hydratedLessons);
@@ -394,7 +394,7 @@ export default function BookingForm() {
     };
 
     loadAvailability();
-  }, [date, durationDefinitions, minDate, presetSlotValue, t]);
+  }, [availabilityVersion, date, durationDefinitions, minDate, presetSlotValue, t]);
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -440,6 +440,7 @@ export default function BookingForm() {
       setSelectedSlotValue("");
       setMultisport(false);
       setTypeOfLesson("individual");
+      setAvailabilityVersion((current) => current + 1);
     } catch (error) {
       console.error("Failed to create lesson:", error);
       setSubmitError(t("booking.submitError"));
@@ -480,7 +481,7 @@ export default function BookingForm() {
       <div className={css.selectField}>
         <CustomDropdownSelect
           id="location"
-          value={selectedSlot ? `${selectedSlot.location}|${selectedSlot.court ?? 1}` : ""}
+          value={selectedSlot ? `${selectedSlot.location}|${selectedSlot.court}` : ""}
           placeholder={t("booking.autoLocation")}
           options={locationOptions}
           onChange={() => {}}

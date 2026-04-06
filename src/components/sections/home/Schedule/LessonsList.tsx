@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { deleteLesson, GetAllLessons } from "../../../../api/lessonsapi";
 import { hydrateLessonsCourts, removeLessonCourt } from "../../../../helpers/lessonCourts";
+import { getApiErrorDetails } from "../../../../helpers/apiError";
 import { getUserByTelegramId } from "../../../../api/usersapi";
 import { useLanguage } from "../../../../hooks/useLanguage";
 import { useTelegramUser } from "../../../../hooks/useTelegramUser";
@@ -121,9 +122,6 @@ export default function LessonsList() {
   }, [error, isLoading, telegramUserId, isAdmin, t]);
 
   const handleDelete = async (lesson: Lesson) => {
-    const confirmed = window.confirm(t("lessons.deleteConfirm"));
-    if (!confirmed) return;
-
     try {
       setDeletingLessonId(lesson._id);
       setError("");
@@ -139,7 +137,7 @@ export default function LessonsList() {
         current.filter((item) => item._id !== lesson._id)
       );
     } catch (deleteError) {
-      console.error("Failed to delete lesson:", deleteError);
+      console.error("Failed to delete lesson:", getApiErrorDetails(deleteError));
       setError(t("lessons.deleteError"));
     } finally {
       setDeletingLessonId("");

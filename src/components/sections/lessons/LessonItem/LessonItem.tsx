@@ -92,9 +92,9 @@ export default function LessonItem({
             <h3 className={css.hall}>{hallLabel}</h3>
             {lesson.multisport ? <span className={css.discountBadge}>M</span> : null}
           </div>
+          <p className={css.courtInline}>{`Court ${lesson.court ?? "-"}`}</p>
           <div className={css.lessonMeta}>
             <span className={css.typeText}>{typeLabel}</span>
-            {lesson.court ? <span className={css.courtText}>{`Court ${lesson.court}`}</span> : null}
           </div>
         </div>
       )}
