@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { GetFreeHours } from "../../../../api/freeHours";
 import { hydrateFreeHoursCourts } from "../../../../helpers/freeHourCourts";
 import { hydrateLessonsCourts } from "../../../../helpers/lessonCourts";
+import { parseApiDateTime } from "../../../../helpers/lessonDateTime";
 import { useLanguage } from "../../../../hooks/useLanguage";
 import { GetAllLessons } from "../../../../api/lessonsapi";
 import { FreeHour } from "../../../../types/freeHour";
@@ -99,27 +100,7 @@ function hoursRange() {
   return arr;
 }
 
-function parseServerDateTime(value: string) {
-  const normalizedValue = value.trim().replace(" ", "T");
-  const match = normalizedValue.match(
-    /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})(?::(\d{2}))?/
-  );
-
-  if (!match) {
-    const fallback = new Date(normalizedValue);
-    return Number.isNaN(fallback.getTime()) ? null : fallback;
-  }
-
-  const [, year, month, day, hours, minutes, seconds = "00"] = match;
-  return new Date(
-    Number(year),
-    Number(month) - 1,
-    Number(day),
-    Number(hours),
-    Number(minutes),
-    Number(seconds)
-  );
-}
+const parseServerDateTime = parseApiDateTime;
 
 function createSlotDate(dateKey: string, time: string) {
   return new Date(`${dateKey}T${time}:00`);

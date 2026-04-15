@@ -178,10 +178,7 @@ export default function EditLessonModal({ lesson, onClose, onSaved }: Props) {
       setError("");
 
       const trimmedComments = draft.comments.trim();
-      const lessonDatePayload =
-        draft.date === initialDraft.date && draft.time === initialDraft.time
-          ? lesson.date
-          : buildLessonDateTime(draft.date, draft.time);
+      const lessonDatePayload = buildLessonDateTime(draft.date, draft.time);
 
       saveLessonCourt({
         date: lessonDatePayload,

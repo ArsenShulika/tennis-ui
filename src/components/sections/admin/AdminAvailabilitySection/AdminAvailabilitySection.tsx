@@ -7,7 +7,7 @@ import {
   removeFreeHourCourt,
   saveFreeHourCourt,
 } from "../../../../helpers/freeHourCourts";
-import { formatLocalDateTime } from "../../../../helpers/lessonDateTime";
+import { buildApiDateTime, formatLocalDateTime, parseApiDateTime } from "../../../../helpers/lessonDateTime";
 import { hydrateLessonsCourts } from "../../../../helpers/lessonCourts";
 import { GetAllLessons } from "../../../../api/lessonsapi";
 import CustomDatePicker from "../../../shared/CustomDatePicker/CustomDatePicker";
@@ -34,27 +34,7 @@ const timeOptions = Array.from({ length: 28 }, (_, index) => {
   return { value, label: value };
 });
 
-function parseDateTime(value: string) {
-  const normalized = value.trim().replace(" ", "T");
-  const match = normalized.match(
-    /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})(?::(\d{2}))?/
-  );
-
-  if (!match) {
-    const parsed = new Date(normalized);
-    return Number.isNaN(parsed.getTime()) ? null : parsed;
-  }
-
-  const [, year, month, day, hours, minutes, seconds = "00"] = match;
-  return new Date(
-    Number(year),
-    Number(month) - 1,
-    Number(day),
-    Number(hours),
-    Number(minutes),
-    Number(seconds)
-  );
-}
+const parseDateTime = parseApiDateTime;
 
 function formatDateInputValue(date: Date) {
   return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(
@@ -370,7 +350,7 @@ export default function AdminAvailabilitySection() {
 
     try {
       saveFreeHourCourt({
-        date: `${date}T${time}:00`,
+        date: buildApiDateTime(date, time),
         location,
         duration: Number(duration),
         court: Number(court),
@@ -380,7 +360,7 @@ export default function AdminAvailabilitySection() {
         location,
         court: Number(court),
         duration: Number(duration),
-        date: `${date}T${time}:00`,
+        date: buildApiDateTime(date, time),
       });
 
       setMessage(t("admin.slotOpened"));

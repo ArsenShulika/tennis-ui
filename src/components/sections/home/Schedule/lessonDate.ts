@@ -1,25 +1,8 @@
 import { Lesson } from "../../../../types/lesson";
+import { parseApiDateTime } from "../../../../helpers/lessonDateTime";
 
 export function parseLocalDateTime(value: string) {
-  const normalizedValue = value.trim().replace(" ", "T");
-  const match = normalizedValue.match(
-    /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})(?::(\d{2}))?/
-  );
-
-  if (!match) {
-    const fallback = new Date(normalizedValue);
-    return Number.isNaN(fallback.getTime()) ? null : fallback;
-  }
-
-  const [, year, month, day, hours, minutes, seconds = "00"] = match;
-  return new Date(
-    Number(year),
-    Number(month) - 1,
-    Number(day),
-    Number(hours),
-    Number(minutes),
-    Number(seconds)
-  );
+  return parseApiDateTime(value);
 }
 
 export function parseLessonStart(lesson: Lesson) {
