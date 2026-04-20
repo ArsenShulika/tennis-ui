@@ -2,6 +2,7 @@ import { FormEvent, useEffect, useMemo, useRef, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import { createFreeHour, deleteFreeHour, GetFreeHours } from "../../../../api/freeHours";
 import { COURT_OPTIONS } from "../../../../constants/courts";
+import { LOCATION_LABELS, LOCATION_OPTIONS } from "../../../../constants/locations";
 import {
   hydrateFreeHoursCourts,
   removeFreeHourCourt,
@@ -19,12 +20,6 @@ import css from "./AdminAvailabilitySection.module.css";
 
 const HOURS_END_MINUTES = 22 * 60;
 const MIN_LESSON_MINUTES = 30;
-
-const locationLabels: Record<LessonLocation, string> = {
-  awf: "Hala tenisowa AWF",
-  gem: "Hala wielofunkcyjna GEM",
-  oko: "Korty Morskie Oko",
-};
 
 const timeOptions = Array.from({ length: 28 }, (_, index) => {
   const totalMinutes = 8 * 60 + index * 30;
@@ -137,11 +132,7 @@ export default function AdminAvailabilitySection() {
   const formRef = useRef<HTMLFormElement | null>(null);
 
   const locationOptions = useMemo(
-    () => [
-      { value: "awf", label: locationLabels.awf },
-      { value: "gem", label: locationLabels.gem },
-      { value: "oko", label: locationLabels.oko },
-    ],
+    () => LOCATION_OPTIONS,
     []
   );
   const durationOptions = useMemo(
@@ -507,7 +498,7 @@ export default function AdminAvailabilitySection() {
                       {formatDatePart(freeHour.date)} {" | "} {formatTimePart(freeHour.date)}
                     </span>
                     <span className={css.freeHourSecondary}>
-                      {locationLabels[freeHour.location]}
+                      {LOCATION_LABELS[freeHour.location]}
                       {` | Court ${freeHour.court ?? "-"}`}
                       {` | ${freeHour.duration} ${t("common.minutesShort")}`}
                     </span>

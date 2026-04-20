@@ -4,18 +4,13 @@ import { getAllUsers } from "../../api/usersapi";
 import CustomDatePicker from "../../components/shared/CustomDatePicker/CustomDatePicker";
 import CustomDropdownSelect from "../../components/shared/CustomDropdownSelect/CustomDropdownSelect";
 import { COURT_OPTIONS } from "../../constants/courts";
+import { LOCATION_OPTIONS } from "../../constants/locations";
 import { buildLessonDateTime } from "../../helpers/lessonDateTime";
 import { saveLessonCourt } from "../../helpers/lessonCourts";
 import { useLanguage } from "../../hooks/useLanguage";
 import { LessonDuration, LessonLocation, LessonType, NewLesson } from "../../types/lesson";
 import { User } from "../../types/user";
 import css from "./AdminBookingPage.module.css";
-
-const LOCATION_LABELS: Record<LessonLocation, string> = {
-  awf: "Hala tenisowa AWF",
-  gem: "Hala wielofunkcyjna GEM",
-  oko: "Korty Morskie Oko",
-};
 const HOURS_START = 8;
 const HOURS_END = 22;
 
@@ -80,11 +75,7 @@ export default function AdminBookingPage() {
     [t]
   );
   const locationOptions = useMemo(
-    () => [
-      { value: "awf", label: LOCATION_LABELS.awf },
-      { value: "gem", label: LOCATION_LABELS.gem },
-      { value: "oko", label: LOCATION_LABELS.oko },
-    ],
+    () => LOCATION_OPTIONS,
     []
   );
   const typeOptions = useMemo(

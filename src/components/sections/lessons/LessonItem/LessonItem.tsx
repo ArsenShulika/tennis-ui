@@ -8,6 +8,9 @@ import {
   formatLessonDateLabel,
   parseLessonStart,
 } from "../../home/Schedule/lessonDate";
+import { useMemo } from "react";
+import { BLOCKEDTIME } from "../../../../constants/time";
+import { useTelegramUser } from "../../../../hooks/useTelegramUser";
 
 type Props = {
   lesson: Lesson;
@@ -43,13 +46,19 @@ export default function LessonItem({
   showDate = true,
 }: Props) {
   const { locale, t } = useLanguage();
+  const { isAdmin } = useTelegramUser();
   const parsedDate = parseLessonStart(lesson);
   const headerDate = formatLessonDateLabel(parsedDate, locale, lesson.date);
   const startTime = formatStartTime(parsedDate, lesson.time);
   const adminCommentValue = lesson.comments?.trim() ?? "";
   const adminComment =
     adminCommentValue && adminCommentValue !== "-" ? adminCommentValue : "";
-
+  const blockDate = useMemo(() => {
+    const currentTime = Date.now();
+    const lessonTime = parsedDate?.getTime() || currentTime;
+    const diff = lessonTime - currentTime;
+    return diff < BLOCKEDTIME;
+  }, [parsedDate?.toISOString()]);
   const userQuery = useQuery({
     queryKey: ["telegramUser", lesson.telegramUserId],
     queryFn: () => getUserByTelegramId(lesson.telegramUserId),
@@ -59,10 +68,16 @@ export default function LessonItem({
   const customerName = userQuery.data?.fullName ?? t("common.notSpecified");
 
   return (
-    <li className={`${css.item} ${showAdminDetails ? css.itemCompact : ""}`.trim()}>
-      <div className={`${css.topRow} ${showDate ? "" : css.topRowNoDate}`.trim()}>
+    <li
+      className={`${css.item} ${showAdminDetails ? css.itemCompact : ""}`.trim()}
+    >
+      <div
+        className={`${css.topRow} ${showDate ? "" : css.topRowNoDate}`.trim()}
+      >
         {showDate ? <span className={css.dateText}>{headerDate}</span> : null}
-        <div className={`${css.scheduleMeta} ${showAdminDetails ? css.scheduleMetaCompact : ""}`.trim()}>
+        <div
+          className={`${css.scheduleMeta} ${showAdminDetails ? css.scheduleMetaCompact : ""}`.trim()}
+        >
           <span className={css.metaPill}>
             <span className={css.clockIcon} aria-hidden />
             {startTime}
@@ -83,14 +98,18 @@ export default function LessonItem({
           </div>
           <div className={css.compactMeta}>
             <span className={css.typeText}>{typeLabel}</span>
-            {lesson.multisport ? <span className={css.discountBadge}>M</span> : null}
+            {lesson.multisport ? (
+              <span className={css.discountBadge}>M</span>
+            ) : null}
           </div>
         </div>
       ) : (
         <div className={css.lessonInfo}>
           <div className={css.hallRow}>
             <h3 className={css.hall}>{hallLabel}</h3>
-            {lesson.multisport ? <span className={css.discountBadge}>M</span> : null}
+            {lesson.multisport ? (
+              <span className={css.discountBadge}>M</span>
+            ) : null}
           </div>
           <p className={css.courtInline}>{`Court ${lesson.court ?? "-"}`}</p>
           <div className={css.lessonMeta}>
@@ -101,7 +120,9 @@ export default function LessonItem({
 
       {showAdminDetails && adminComment ? (
         <div className={css.commentBlock}>
-          <span className={css.commentLabel}>{t("adminBooking.commentsLabel")}</span>
+          <span className={css.commentLabel}>
+            {t("adminBooking.commentsLabel")}
+          </span>
           <p className={css.commentText}>{adminComment}</p>
         </div>
       ) : null}
@@ -117,15 +138,17 @@ export default function LessonItem({
             {t("lessons.edit")}
           </button>
         ) : null}
-        <button
-          type="button"
-          className={css.cancelBtn}
-          onClick={() => onCancel?.(lesson)}
-          aria-label={t("lessons.cancelBooking")}
-          disabled={isDeleting}
-        >
-          {isDeleting ? t("common.deleting") : t("lessons.cancel")}
-        </button>
+        {(!blockDate || isAdmin) && (
+          <button
+            type="button"
+            className={css.cancelBtn}
+            onClick={() => onCancel?.(lesson)}
+            aria-label={t("lessons.cancelBooking")}
+            disabled={isDeleting}
+          >
+            {isDeleting ? t("common.deleting") : t("lessons.cancel")}
+          </button>
+        )}
       </div>
     </li>
   );

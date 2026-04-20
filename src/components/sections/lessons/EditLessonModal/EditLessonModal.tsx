@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { updateLesson } from "../../../../api/lessonsapi";
 import { getAllUsers } from "../../../../api/usersapi";
 import { COURT_OPTIONS } from "../../../../constants/courts";
+import { LOCATION_OPTIONS } from "../../../../constants/locations";
 import { buildLessonDateTime } from "../../../../helpers/lessonDateTime";
 import { saveLessonCourt } from "../../../../helpers/lessonCourts";
 import CustomDatePicker from "../../../shared/CustomDatePicker/CustomDatePicker";
@@ -28,12 +29,6 @@ type DraftLesson = {
   typeOfLesson: LessonType;
   multisport: boolean;
   comments: string;
-};
-
-const LOCATION_LABELS: Record<LessonLocation, string> = {
-  awf: "Hala tenisowa AWF",
-  gem: "Hala wielofunkcyjna GEM",
-  oko: "Korty Morskie Oko",
 };
 
 function pad2(value: number) {
@@ -155,11 +150,7 @@ export default function EditLessonModal({ lesson, onClose, onSaved }: Props) {
   );
 
   const locationOptions = useMemo(
-    () => [
-      { value: "awf", label: LOCATION_LABELS.awf },
-      { value: "gem", label: LOCATION_LABELS.gem },
-      { value: "oko", label: LOCATION_LABELS.oko },
-    ],
+    () => LOCATION_OPTIONS,
     []
   );
 

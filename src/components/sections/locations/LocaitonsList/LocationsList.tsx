@@ -8,8 +8,8 @@ type Location = {
   id: string;
   name: string;
   address: string;
-  mapQuery: string;
-  image: string;
+  mapQuery?: string;
+  image?: string;
   pricingTitle?: string;
   pricing?: Array<{
     days: string;
@@ -103,6 +103,15 @@ const data: Location[] = [
     image:
       "https://streetviewpixels-pa.googleapis.com/v1/thumbnail?panoid=NwtEjN2sT0Xnbq8Ptptddw&cb_client=search.gws-prod.gps&w=408&h=240&yaw=205.94199&pitch=0&thumbfov=100",
   },
+  {
+    id: "olimpijski",
+    name: "Korty Olimpijski",
+    address: "al Ignacego Jana Paderewskiego 35, 51-612 Wrocław",
+    mapQuery: "al Ignacego Jana Paderewskiego 35, 51-612 Wrocław",
+    image:
+      "https://lh3.googleusercontent.com/p/AF1QipPkW0vEfBiRl-rzD62MNA4yYXqCnhXKAWK90xzc=w284-h203-n-k-no-nu",
+    pricingTitle: "Court Rental Prices",
+  },
 ];
 
 const isPlainLeftClick = (event: MouseEvent<HTMLAnchorElement>) =>
@@ -129,22 +138,35 @@ const LocationsList = () => {
   return (
     <ul className={css.locationList}>
       {data.map((loc) => {
-        const mapUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
-          loc.mapQuery
-        )}`;
+        const mapUrl = loc.mapQuery
+          ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(loc.mapQuery)}`
+          : null;
 
         return (
           <li key={loc.id}>
             <a
-              href={mapUrl}
-              target="_blank"
-              rel="noopener noreferrer"
+              href={mapUrl ?? undefined}
+              target={mapUrl ? "_blank" : undefined}
+              rel={mapUrl ? "noopener noreferrer" : undefined}
               className={css.card}
-              onClick={(event) => handleCardClick(event, mapUrl)}
-              aria-label={t("locations.openInMaps", { name: loc.name })}
+              onClick={(event) => {
+                if (!mapUrl) {
+                  event.preventDefault();
+                  return;
+                }
+
+                handleCardClick(event, mapUrl);
+              }}
+              aria-label={
+                mapUrl ? t("locations.openInMaps", { name: loc.name }) : loc.name
+              }
             >
               <div className={css.image}>
-                <img src={loc.image} alt={loc.name} loading="lazy" />
+                {loc.image ? (
+                  <img src={loc.image} alt={loc.name} loading="lazy" />
+                ) : (
+                  <div className={css.imageFallback}>{loc.name}</div>
+                )}
               </div>
               <div className={css.body}>
                 <div className={css.summary}>

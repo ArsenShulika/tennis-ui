@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { GetFreeHours } from "../../../../api/freeHours";
+import { LOCATION_LABELS } from "../../../../constants/locations";
 import { hydrateFreeHoursCourts } from "../../../../helpers/freeHourCourts";
 import { hydrateLessonsCourts } from "../../../../helpers/lessonCourts";
 import { parseApiDateTime } from "../../../../helpers/lessonDateTime";
@@ -31,12 +32,6 @@ type ScheduleProps = {
 const HOURS_START = 8;
 const HOURS_END = 22;
 const MIN_BOOKING_DURATION_MINUTES = 60;
-
-const LOCATION_LABELS: Record<LessonLocation, string> = {
-  awf: "Hala tenisowa AWF",
-  gem: "Hala wielofunkcyjna GEM",
-  oko: "Korty Morskie Oko",
-};
 
 function pad2(n: number) {
   return n.toString().padStart(2, "0");

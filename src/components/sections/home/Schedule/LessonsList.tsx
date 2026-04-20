@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { deleteLesson, GetAllLessons } from "../../../../api/lessonsapi";
+import { LOCATION_LABELS } from "../../../../constants/locations";
 import { hydrateLessonsCourts, removeLessonCourt } from "../../../../helpers/lessonCourts";
 import { getApiErrorDetails } from "../../../../helpers/apiError";
 import { getUserByTelegramId } from "../../../../api/usersapi";
@@ -11,12 +12,6 @@ import css from "./LessonsList.module.css";
 import AdminLessonsList from "./AdminLessonsList";
 import UserLessonsList from "./UserLessonsList";
 import { parseLessonStart } from "./lessonDate";
-
-const LOCATION_LABELS: Record<Lesson["location"], string> = {
-  awf: "Hala tenisowa AWF",
-  gem: "Hala wielofunkcyjna GEM",
-  oko: "Korty Morskie Oko",
-};
 
 export default function LessonsList() {
   const { t } = useLanguage();

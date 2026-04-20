@@ -1,5 +1,5 @@
 export type LessonDuration = "m30" | "m60" | "m90" | "m120";
-export type LessonLocation = "awf" | "gem" | "oko";
+export type LessonLocation = "awf" | "gem" | "oko" | "olimpijski";
 export type LessonType = "individual" | "split";
 
 export interface Lesson {

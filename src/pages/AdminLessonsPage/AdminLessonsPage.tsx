@@ -5,18 +5,13 @@ import AdminLessonsList from "../../components/sections/home/Schedule/AdminLesso
 import { parseLessonStart } from "../../components/sections/home/Schedule/lessonDate";
 import CustomDatePicker from "../../components/shared/CustomDatePicker/CustomDatePicker";
 import CustomDropdownSelect from "../../components/shared/CustomDropdownSelect/CustomDropdownSelect";
+import { LOCATION_LABELS, LOCATION_OPTIONS } from "../../constants/locations";
 import { hydrateLessonsCourts, removeLessonCourt } from "../../helpers/lessonCourts";
 import { getApiErrorDetails } from "../../helpers/apiError";
 import { useLanguage } from "../../hooks/useLanguage";
 import { Lesson, LessonLocation, LessonType } from "../../types/lesson";
 import { User } from "../../types/user";
 import css from "./AdminLessonsPage.module.css";
-
-const LOCATION_LABELS: Record<LessonLocation, string> = {
-  awf: "Hala tenisowa AWF",
-  gem: "Hala wielofunkcyjna GEM",
-  oko: "Korty Morskie Oko",
-};
 
 type LocationFilter = LessonLocation | "all";
 type TypeFilter = LessonType | "all";
@@ -71,9 +66,7 @@ export default function AdminLessonsPage() {
   const locationOptions = useMemo(
     () => [
       { value: "all", label: t("adminLessons.filters.allLocations") },
-      { value: "awf", label: LOCATION_LABELS.awf },
-      { value: "gem", label: LOCATION_LABELS.gem },
-      { value: "oko", label: LOCATION_LABELS.oko },
+      ...LOCATION_OPTIONS,
     ],
     [t]
   );

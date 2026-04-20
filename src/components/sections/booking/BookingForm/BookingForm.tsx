@@ -2,6 +2,7 @@ import { FormEvent, useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import { GetFreeHours } from "../../../../api/freeHours";
 import { createLesson, GetAllLessons } from "../../../../api/lessonsapi";
+import { isLessonLocation, LOCATION_LABELS } from "../../../../constants/locations";
 import { hydrateFreeHoursCourts } from "../../../../helpers/freeHourCourts";
 import { buildLessonDateTime, parseApiDateTime } from "../../../../helpers/lessonDateTime";
 import { hydrateLessonsCourts, saveLessonCourt } from "../../../../helpers/lessonCourts";
@@ -31,12 +32,6 @@ type BookingSlot = {
 
 const HOURS_START = 8;
 const HOURS_END = 22;
-
-const LOCATION_LABELS: Record<LessonLocation, string> = {
-  awf: "Hala tenisowa AWF",
-  gem: "Hala wielofunkcyjna GEM",
-  oko: "Korty Morskie Oko",
-};
 
 const TIME_SLOTS = createTimeSlots();
 
@@ -214,10 +209,6 @@ function buildBookingSlots(grid: DayGrid, selectedDate: string, durationOptions:
   });
 
   return result.sort((left, right) => left.value.localeCompare(right.value));
-}
-
-function isLessonLocation(value: string | null): value is LessonLocation {
-  return value === "awf" || value === "gem" || value === "oko";
 }
 
 export default function BookingForm() {
