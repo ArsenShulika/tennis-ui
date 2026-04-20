@@ -110,7 +110,24 @@ const data: Location[] = [
     mapQuery: "al Ignacego Jana Paderewskiego 35, 51-612 Wrocław",
     image:
       "https://lh3.googleusercontent.com/p/AF1QipPkW0vEfBiRl-rzD62MNA4yYXqCnhXKAWK90xzc=w284-h203-n-k-no-nu",
-    pricingTitle: "Court Rental Prices",
+    pricingTitle: "Winter Season Court Rental Prices",
+    pricing: [
+      {
+        days: "Weekdays",
+        time: "06:00 - 15:00",
+        price: "135.00 PLN",
+      },
+      {
+        days: "Weekdays",
+        time: "15:00 - 23:59",
+        price: "165.00 PLN",
+      },
+      {
+        days: "Weekend",
+        time: "06:00 - 23:59",
+        price: "135.00 PLN",
+      },
+    ],
   },
 ];
 
